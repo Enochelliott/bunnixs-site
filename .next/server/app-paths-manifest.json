@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/unread-count/route": "app/api/unread-count/route.js",
+  "/api/stream/token/route": "app/api/stream/token/route.js",
+  "/(app)/discover/page": "app/(app)/discover/page.js",
+  "/(app)/creator/[username]/page": "app/(app)/creator/[username]/page.js",
+  "/(app)/feed/page": "app/(app)/feed/page.js",
+  "/(app)/profile/page": "app/(app)/profile/page.js",
+  "/(app)/messages/page": "app/(app)/messages/page.js"
+}

@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-clash: 'Clash Display', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0A0A0F;
+  color: #E8E8FF;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0F;
+}
+::-webkit-scrollbar-thumb {
+  background: #3A3A5C;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF2D8A;
+}
+
+/* Font utility */
+.font-display {
+  font-family: var(--font-clash), 'Syne', sans-serif;
+}
+
+/* Glow utilities */
+.glow-pink {
+  box-shadow: 0 0 20px rgba(255, 45, 138, 0.3), 0 0 60px rgba(255, 45, 138, 0.1);
+}
+.glow-purple {
+  box-shadow: 0 0 20px rgba(155, 48, 255, 0.3), 0 0 60px rgba(155, 48, 255, 0.1);
+}
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #FF2D8A 0%, #9B30FF 50%, #00F5FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* Stream Chat overrides */
+.str-chat {
+  --str-chat__primary-color: #FF2D8A;
+  --str-chat__active-primary-color: #9B30FF;
+  --str-chat__surface-color: #12121A;
+  --str-chat__secondary-surface-color: #1E1E2E;
+  --str-chat__primary-surface-color: #12121A;
+  --str-chat__primary-surface-color-low-emphasis: #1E1E2E;
+  --str-chat__border-radius-circle: 50%;
+  font-family: var(--font-syne), sans-serif !important;
+}
+
+.str-chat__channel-list {
+  background: #12121A !important;
+  border-right: 1px solid #1E1E2E !important;
+}
+
+.str-chat__message-input {
+  background: #12121A !important;
+  border-top: 1px solid #1E1E2E !important;
+}
+
+.str-chat__main-panel {
+  background: #0A0A0F !important;
+}
+
+/* Input styles */
+input, textarea {
+  background: transparent;
+  outline: none;
+}
+
+/* Transition defaults */
+a, button {
+  transition: all 0.2s ease;
+}
+
+/* Custom selection */
+::selection {
+  background: rgba(255, 45, 138, 0.3);
+  color: #E8E8FF;
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    #12121A 0px,
+    #1E1E2E 40px,
+    #12121A 80px
+  );
+  background-size: 1000px;
+}
+
+/* Orbit animation for login page */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(180px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(180px) rotate(-360deg); }
+}
+
+@keyframes orbit-reverse {
+  from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+  to { transform: rotate(-360deg) translateX(120px) rotate(360deg); }
+}
+
+.orbit-1 { animation: orbit 8s linear infinite; }
+.orbit-2 { animation: orbit-reverse 12s linear infinite; }
+.orbit-3 { animation: orbit 20s linear infinite; }
+
+/* Notification banner slide down */
+@keyframes slide-down {
+  from { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.animate-slide-down { animation: slide-down 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* Profile modal scale in */
+@keyframes scale-in-modal {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-scale-in { animation: scale-in-modal 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }

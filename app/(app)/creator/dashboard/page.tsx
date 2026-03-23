@@ -1,0 +1,170 @@
+'use client';
+import { useEffect, useState, useCallback } from 'react';
+import { createSupabaseBrowserClient } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { Post, CreatorWallet } from '@/lib/types';
+import PostComposer from '@/components/PostComposer';
+import PostCard from '@/components/PostCard';
+import toast from 'react-hot-toast';
+
+const supabase = createSupabaseBrowserClient();
+
+export default function CreatorDashboard() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [wallet, setWallet] = useState<CreatorWallet | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user, profile } = useAuth();
+
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+    const [postsRes, walletRes] = await Promise.all([
+      supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('creator_wallets').select('*').eq('creator_id', user.id).single(),
+    ]);
+    setPosts((postsRes.data || []) as Post[]);
+    setWallet(walletRes.data);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  return (
+    <div className="max-w-2xl mx-auto py-8 px-6">
+      {/* Verification Banner */}
+      {!profile?.is_verified_creator && (
+        <button
+          onClick={async () => {
+            const res = await fetch('/api/veriff/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ verificationType: 'creator', userId: user?.id }),
+            });
+            const data = await res.json();
+            if (data.sessionUrl) window.location.href = data.sessionUrl;
+            else toast.error('Could not start verification');
+          }}
+          className="w-full mb-6 p-4 bg-gradient-to-r from-bunni-pink/20 to-bunni-purple/20 border border-bunni-pink/40 rounded-2xl flex items-center justify-between hover:border-bunni-pink transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🪪</span>
+            <div className="text-left">
+              <p className="font-bold text-sm text-bunni-pink">Verify your identity to start earning!</p>
+              <p className="text-xs text-bunni-muted">Quick 60-second ID verification — required before posting</p>
+            </div>
+          </div>
+          <span className="text-bunni-pink group-hover:translate-x-1 transition-transform">→</span>
+        </button>
+      )}
+
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-bold">
+          <span className="text-gradient">Creator Studio</span>
+        </h1>
+        <p className="text-bunni-muted text-sm mt-1">@{profile?.username} — manage your content and earnings</p>
+      </div>
+
+      {/* Wallet stats */}
+      {wallet && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: 'Pending', value: wallet.pending_balance, color: 'text-orange-400', icon: '⏳' },
+            { label: 'Available', value: wallet.available_balance, color: 'text-bunni-lime', icon: '💰' },
+            { label: 'Total Earned', value: wallet.total_earned, color: 'text-bunni-pink', icon: '📈' },
+          ].map(stat => (
+            <div key={stat.label} className="bg-bunni-card border border-bunni-border rounded-2xl p-4 text-center">
+              <p className="text-xl mb-1">{stat.icon}</p>
+              <p className={`font-display text-xl font-bold ${stat.color}`}>${stat.value.toFixed(2)}</p>
+              <p className="text-xs text-bunni-muted font-mono mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Subscription info */}
+      {profile?.subscription_price && (
+        <div className="bg-bunni-card border border-bunni-border rounded-2xl p-4 mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Your subscription</p>
+            <p className="text-xs text-bunni-muted mt-0.5">Fans pay ${(profile.subscription_price * 1.30).toFixed(2)}/mo — you receive ${profile.subscription_price.toFixed(2)}/mo</p>
+          </div>
+          <div className="text-right">
+            <p className="font-display text-2xl font-bold text-bunni-pink">${profile.subscription_price.toFixed(2)}</p>
+            <p className="text-xs text-bunni-muted">per month</p>
+          </div>
+        </div>
+      )}
+
+      {/* Co-Creator Invite */}
+      <div className="bg-bunni-card border border-bunni-pink/20 rounded-2xl p-5 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-display text-base font-bold">Generate Co-Creator Invite Link</h3>
+            <p className="text-[11px] text-bunni-muted italic mt-0.5">Age &amp; Identity Verification for Co-Creators</p>
+          </div>
+          <button
+            onClick={async () => {
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const res = await fetch('/api/veriff/invite', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session?.access_token || '') },
+                  body: JSON.stringify({}),
+                });
+                const data = await res.json();
+                if (data.inviteUrl) {
+                  await navigator.clipboard.writeText(data.inviteUrl);
+                  toast.success('Invite link copied! 🔗 Valid for 72 hours.');
+                } else {
+                  toast.error('Could not generate invite link');
+                }
+              } catch { toast.error('Could not generate invite link'); }
+            }}
+            className="bg-gradient-bunni text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-all whitespace-nowrap"
+          >
+            🔗 Generate Link
+          </button>
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="mb-6">
+        <PostComposer onPost={fetchData} />
+      </div>
+
+      {/* Posts */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2].map(i => (
+            <div key={i} className="bg-bunni-card border border-bunni-border rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full shimmer" />
+                <div className="space-y-1.5">
+                  <div className="w-24 h-3 rounded shimmer" />
+                  <div className="w-16 h-2 rounded shimmer" />
+                </div>
+              </div>
+              <div className="w-full h-3 rounded shimmer" />
+            </div>
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="text-5xl mb-4">✨</div>
+          <p className="font-display text-lg font-semibold mb-1">No posts yet</p>
+          <p className="text-bunni-muted text-sm">Create your first post above!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map(post => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onDelete={() => setPosts(prev => prev.filter(p => p.id !== post.id))}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
