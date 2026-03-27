@@ -1,10 +1,11 @@
 'use client';
+import { Suspense } from 'react';
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function VerifyAgePage() {
+function VerifyAgePageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -136,3 +137,5 @@ export default function VerifyAgePage() {
     </div>
   );
 }
+
+export default function VerifyAgePage() { return <Suspense><VerifyAgePageInner /></Suspense>; }

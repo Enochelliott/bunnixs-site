@@ -1,11 +1,12 @@
 'use client';
+import { Suspense } from 'react';
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
-export default function VerifyCompletePage() {
+function VerifyCompleteInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { profile } = useAuth();
@@ -94,3 +95,5 @@ export default function VerifyCompletePage() {
     </div>
   );
 }
+
+export default function VerifyCompletePage() { return <Suspense><VerifyCompleteInner /></Suspense>; }
