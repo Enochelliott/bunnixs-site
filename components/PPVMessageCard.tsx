@@ -33,7 +33,7 @@ export function PPVMessageCard({ attachment, isCreator, onPurchase }: PPVMessage
   useEffect(() => {
     const check = async () => {
     const isUpload = attachment.post_id.startsWith('upload_');
-    const query = supabase.from('ppv_purchases').select('id').eq('fan_id', user.id).eq('status', 'completed');
+    const query = supabase.from('ppv_purchases').select('id').eq('fan_id', user?.id || '').eq('status', 'completed');
     const { data } = isUpload
       ? await query.eq('ccbill_transaction_id', attachment.post_id).maybeSingle()
       : await query.eq('post_id', attachment.post_id).maybeSingle();
