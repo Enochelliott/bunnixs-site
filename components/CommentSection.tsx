@@ -38,7 +38,7 @@ export default function CommentSection({ postId, postOwnerId }: Props) {
       .eq('post_id', postId).order('created_at', { ascending: true }).limit(50);
     setCount(total || 0);
     if (!data) return;
-    const ids = [...new Set(data.map(c => c.user_id))];
+    const ids = Array.from(new Set(data.map(c => c.user_id)));
     const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', ids);
     const pm: Record<string, any> = {};
     (profiles || []).forEach(p => { pm[p.id] = p; });
@@ -145,4 +145,5 @@ export default function CommentSection({ postId, postOwnerId }: Props) {
     </div>
   );
 }
+
 
