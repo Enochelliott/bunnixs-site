@@ -45,7 +45,7 @@ export default function FeedPage() {
       .map((s: any) => s.creator_id);
 
     // 3. Build list of all creator IDs we follow
-    const allFollowing = [...new Set([...freeFollowing, ...paidFollowing])];
+    const allFollowing = Array.from(new Set([...freeFollowing, ...paidFollowing]));
 
     if (allFollowing.length === 0) {
       // No subscriptions — show own posts only
@@ -190,3 +190,4 @@ export default function FeedPage() {
     </div>
   );
 }
+
