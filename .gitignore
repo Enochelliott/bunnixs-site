@@ -5,3 +5,5 @@ node_modules
 lib/geo/GeoLite2-City.mmdb
 *.mmdb
 *.node
+public/
+
