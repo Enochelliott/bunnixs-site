@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Build Veriff session payload
     const sessionPayload: any = {
       verification: {
-        callback: `${process.env.NEXT_PUBLIC_APP_URL}/api/veriff/webhook`,
+        callback: 'https://41fe-173-186-212-32.ngrok-free.app/verify/complete',
         person: {
           firstName: ' ',
           lastName: ' ',

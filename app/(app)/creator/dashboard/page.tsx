@@ -3,9 +3,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Post, CreatorWallet } from '@/lib/types';
-import PostComposer from '@/components/PostComposer';
+import PostComposer from '@/components/content/PostComposer';
 import PostCard from '@/components/PostCard';
 import toast from 'react-hot-toast';
+import LaunchSale from '@/components/subscriptions/LaunchSale';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -43,16 +44,16 @@ export default function CreatorDashboard() {
             if (data.sessionUrl) window.location.href = data.sessionUrl;
             else toast.error('Could not start verification');
           }}
-          className="w-full mb-6 p-4 bg-gradient-to-r from-bunni-pink/20 to-bunni-purple/20 border border-bunni-pink/40 rounded-2xl flex items-center justify-between hover:border-bunni-pink transition-all group"
+          className="w-full mb-6 p-4 bg-gradient-to-r from-hf-red/20 to-hf-orange/20 border border-hf-red/40 rounded-2xl flex items-center justify-between hover:border-hf-orange transition-all group"
         >
           <div className="flex items-center gap-3">
             <span className="text-2xl">🪪</span>
             <div className="text-left">
-              <p className="font-bold text-sm text-bunni-pink">Verify your identity to start earning!</p>
-              <p className="text-xs text-bunni-muted">Quick 60-second ID verification — required before posting</p>
+              <p className="font-bold text-sm text-hf-orange">Verify your identity to start earning!</p>
+              <p className="text-xs text-hf-muted">Quick 60-second ID verification — required before posting</p>
             </div>
           </div>
-          <span className="text-bunni-pink group-hover:translate-x-1 transition-transform">→</span>
+          <span className="text-hf-orange group-hover:translate-x-1 transition-transform">→</span>
         </button>
       )}
 
@@ -61,21 +62,21 @@ export default function CreatorDashboard() {
         <h1 className="font-display text-3xl font-bold">
           <span className="text-gradient">Creator Studio</span>
         </h1>
-        <p className="text-bunni-muted text-sm mt-1">@{profile?.username} — manage your content and earnings</p>
+        <p className="text-hf-muted text-sm mt-1">@{profile?.username} — manage your content and earnings</p>
       </div>
 
       {/* Wallet stats */}
       {wallet && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Pending', value: wallet.pending_balance, color: 'text-orange-400', icon: '⏳' },
-            { label: 'Available', value: wallet.available_balance, color: 'text-bunni-lime', icon: '💰' },
-            { label: 'Total Earned', value: wallet.total_earned, color: 'text-bunni-pink', icon: '📈' },
+            { label: 'Pending', value: wallet.pending_balance, color: 'text-yellow-400', icon: '⏳' },
+            { label: 'Available', value: wallet.available_balance, color: 'text-green-400', icon: '💰' },
+            { label: 'Total Earned', value: wallet.total_earned, color: 'text-hf-orange', icon: '📈' },
           ].map(stat => (
-            <div key={stat.label} className="bg-bunni-card border border-bunni-border rounded-2xl p-4 text-center">
+            <div key={stat.label} className="bg-hf-card border border-hf-border rounded-2xl p-4 text-center">
               <p className="text-xl mb-1">{stat.icon}</p>
               <p className={`font-display text-xl font-bold ${stat.color}`}>${stat.value.toFixed(2)}</p>
-              <p className="text-xs text-bunni-muted font-mono mt-1">{stat.label}</p>
+              <p className="text-xs text-hf-muted font-mono mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -83,24 +84,29 @@ export default function CreatorDashboard() {
 
       {/* Subscription info */}
       {profile?.subscription_price && (
-        <div className="bg-bunni-card border border-bunni-border rounded-2xl p-4 mb-6 flex items-center justify-between">
+        <div className="bg-hf-card border border-hf-border rounded-2xl p-4 mb-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold">Your subscription</p>
-            <p className="text-xs text-bunni-muted mt-0.5">Fans pay ${(profile.subscription_price * 1.30).toFixed(2)}/mo — you receive ${profile.subscription_price.toFixed(2)}/mo</p>
+            <p className="text-xs text-hf-muted mt-0.5">Fans pay ${(profile.subscription_price * 1.30).toFixed(2)}/mo — you receive ${profile.subscription_price.toFixed(2)}/mo</p>
           </div>
           <div className="text-right">
-            <p className="font-display text-2xl font-bold text-bunni-pink">${profile.subscription_price.toFixed(2)}</p>
-            <p className="text-xs text-bunni-muted">per month</p>
+            <p className="font-display text-2xl font-bold text-hf-orange">${profile.subscription_price.toFixed(2)}</p>
+            <p className="text-xs text-hf-muted">per month</p>
           </div>
         </div>
       )}
 
+      {/* Creator Tools Row */}
+      <div className="flex gap-3 mb-6 flex-wrap">
+        <LaunchSale />
+      </div>
+
       {/* Co-Creator Invite */}
-      <div className="bg-bunni-card border border-bunni-pink/20 rounded-2xl p-5 mb-6">
+      <div className="bg-hf-card border border-hf-orange/20 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-display text-base font-bold">Generate Co-Creator Invite Link</h3>
-            <p className="text-[11px] text-bunni-muted italic mt-0.5">Age &amp; Identity Verification for Co-Creators</p>
+            <p className="text-[11px] text-hf-muted italic mt-0.5">Age & Identity Verification for Co-Creators</p>
           </div>
           <button
             onClick={async () => {
@@ -120,7 +126,7 @@ export default function CreatorDashboard() {
                 }
               } catch { toast.error('Could not generate invite link'); }
             }}
-            className="bg-gradient-bunni text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-all whitespace-nowrap"
+            className="bg-gradient-hf text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-all whitespace-nowrap"
           >
             🔗 Generate Link
           </button>
@@ -136,23 +142,22 @@ export default function CreatorDashboard() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map(i => (
-            <div key={i} className="bg-bunni-card border border-bunni-border rounded-2xl p-5 space-y-3">
+            <div key={i} className="bg-hf-card border border-hf-border rounded-2xl p-5 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full shimmer" />
+                <div className="w-10 h-10 rounded-full bg-hf-border animate-pulse" />
                 <div className="space-y-1.5">
-                  <div className="w-24 h-3 rounded shimmer" />
-                  <div className="w-16 h-2 rounded shimmer" />
+                  <div className="w-24 h-3 rounded bg-hf-border animate-pulse" />
+                  <div className="w-16 h-2 rounded bg-hf-border animate-pulse" />
                 </div>
               </div>
-              <div className="w-full h-3 rounded shimmer" />
             </div>
           ))}
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-5xl mb-4">✨</div>
+          <div className="text-5xl mb-4">🔥</div>
           <p className="font-display text-lg font-semibold mb-1">No posts yet</p>
-          <p className="text-bunni-muted text-sm">Create your first post above!</p>
+          <p className="text-hf-muted text-sm">Create your first post above!</p>
         </div>
       ) : (
         <div className="space-y-4">

@@ -8,6 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Profile, Post, calculateFanPrice } from '@/lib/types';
 import PostCard from '@/components/PostCard';
 import toast from 'react-hot-toast';
+import SubscribeButton from '@/components/subscriptions/SubscribeButton';
+import BlockButton from '@/components/blocking/BlockButton';
+import FanDataPopup from '@/components/creator/FanDataPopup';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -40,6 +43,20 @@ export default function CreatorProfilePage() {
       return;
     }
     setCreator(data as Profile);
+    // Track profile view
+    if (user && user.id !== data.id) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) return;
+        fetch('/api/fan-activity', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token,
+          },
+          body: JSON.stringify({ creatorId: data.id, activityType: 'profile_view' }),
+        }).catch(() => {});
+      });
+    }
     setLoadingProfile(false);
   }, [username, router]);
 
@@ -213,13 +230,13 @@ export default function CreatorProfilePage() {
           {/* Action buttons */}
           <div className="flex gap-2 pb-1">
             {/* Share / private link */}
+          <div className="flex gap-2 pb-1 flex-wrap">
+            {/* Message button — non-owners only */}
+            {!isOwnProfile && (
+              <button onClick={() => router.push('/messages')} className="px-3 py-2 rounded-xl border border-hf-border text-hf-muted hover:border-hf-orange hover:text-hf-orange text-xs font-mono transition-all">💬</button>
+            )}
+            {/* Share */}
             <button
-              onClick={copyShareLink}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono transition-all ${
-                linkCopied
-                  ? 'border-bunni-lime text-bunni-lime bg-bunni-lime/10'
-                  : 'border-bunni-border text-bunni-muted hover:border-bunni-pink hover:text-bunni-pink'
-              }`}
               title="Copy profile link"
             >
               {linkCopied ? '✓ Copied!' : '🔗 Share'}
@@ -233,21 +250,21 @@ export default function CreatorProfilePage() {
               >
                 Edit Profile
               </button>
-            ) : isSubscribed ? (
-              <button className="px-4 py-2 rounded-xl bg-bunni-lime/15 border border-bunni-lime/40 text-bunni-lime text-xs font-semibold">
-                ✓ Subscribed
-              </button>
             ) : (
-              <button
-                onClick={handleSubscribe}
-                className="px-5 py-2 rounded-xl bg-gradient-bunni text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-pink"
-              >
-                Subscribe {creator.subscription_price
-                  ? `$${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo`
-                  : '· Free'}
-              </button>
+              <div className="flex items-center gap-2">
+                <BlockButton targetId={creator.id} targetUsername={creator.username} onBlock={() => router.push('/discover')} />
+                <SubscribeButton creatorId={creator.id} creatorUsername={creator.username} subscriptionPrice={creator.subscription_price || 0} onSubscribed={() => setIsSubscribed(true)} />
+              </div>
             )}
           </div>
+        </div>
+
+
+
+
+
+
+
         </div>
 
         {/* Name + badges */}

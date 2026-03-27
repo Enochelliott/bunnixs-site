@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,6 +23,7 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) return;
@@ -109,7 +111,22 @@ export default function NotificationBell() {
               </div>
             ) : (
               notifications.map(n => (
-                <div key={n.id} className={`px-4 py-3 border-b border-bunni-border/50 flex gap-3 transition-colors ${!n.read ? 'bg-bunni-pink/5' : ''}`}>
+                <div
+                key={n.id}
+                onClick={() => {
+                  setOpen(false);
+                  if (n.target_id && n.target_type === 'post') {
+                    // Navigate to creator profile or feed based on notification type
+                    if (n.type === 'new_subscriber' || n.type === 'ppv_unlocked') {
+                      router.push('/creator/dashboard');
+                    } else {
+                      router.push('/feed');
+                    }
+                  } else if (n.type === 'new_subscriber' || n.type === 'ppv_unlocked') {
+                    router.push('/creator/dashboard');
+                  }
+                }}
+                className={`px-4 py-3 border-b border-bunni-border/50 flex gap-3 transition-colors cursor-pointer hover:bg-bunni-border/30 ${!n.read ? 'bg-bunni-pink/5' : ''}`}>
                   <span className="text-xl flex-shrink-0 mt-0.5">{typeIcon(n.type)}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-bunni-text truncate">{n.title}</p>

@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 // module-level supabase
 const supabase = createSupabaseBrowserClient();
 
-const COOL_SUGGESTIONS = ['neon_rabbit', 'void_bunni', 'pixel_hops', 'lunar_bunx', 'static_kit'];
+const COOL_SUGGESTIONS = ['hot_lover', 'fire_vibes', 'neon_heat', 'wild_flame', 'spicy_soul'];
 
 type Step = 'username' | 'role' | 'creator_prefs' | 'fan_prefs';
 
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
     }
 
     await refreshProfile();
-    toast.success(`Welcome to BunniX, @${username}! Time to create.`);
+    toast.success(`Welcome to HotFans, @${username}! Time to create.`);
     router.push('/creator/dashboard');
     setLoading(false);
   };
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
     }
 
     await refreshProfile();
-    toast.success(`Welcome to BunniX, @${username}!`);
+    toast.success(`Welcome to HotFans, @${username}!`);
     router.push('/discover');
     setLoading(false);
   };
@@ -159,8 +159,8 @@ export default function OnboardingPage() {
   // Show spinner while auth loads
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-bunni-dark flex items-center justify-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-bunni animate-pulse-glow flex items-center justify-center">
+      <div className="min-h-screen bg-hf-dark flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-hf animate-pulse-glow flex items-center justify-center">
           <span className="text-2xl">🐰</span>
         </div>
       </div>
@@ -173,8 +173,8 @@ export default function OnboardingPage() {
       onClick={() => onClick(value)}
       className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
         current === value || (Array.isArray(current) && current.includes(value))
-          ? 'bg-bunni-pink/20 border-bunni-pink text-bunni-pink'
-          : 'bg-bunni-dark border-bunni-border text-bunni-muted hover:border-bunni-muted hover:text-bunni-text'
+          ? 'bg-hf-red/20 border-hf-orange text-hf-orange'
+          : 'bg-hf-dark border-hf-border text-hf-muted hover:border-hf-muted hover:text-hf-text'
       }`}
     >
       {children}
@@ -182,19 +182,19 @@ export default function OnboardingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-bunni-dark flex items-center justify-center relative overflow-hidden px-6">
+    <div className="min-h-screen bg-hf-dark flex items-center justify-center relative overflow-hidden px-6">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-bunni-purple/10 blur-[100px]" />
-        <div className="absolute bottom-1/3 left-1/4 w-[300px] h-[300px] rounded-full bg-bunni-pink/10 blur-[80px]" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-hf-red/10 blur-[100px]" />
+        <div className="absolute bottom-1/3 left-1/4 w-[300px] h-[300px] rounded-full bg-hf-red/10 blur-[80px]" />
       </div>
 
       <div className="relative z-10 w-full max-w-lg animate-slide-up">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-bunni mb-3">
-            <span className="text-2xl">🐰</span>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-hf mb-3">
+            <span className="text-2xl">🔥</span>
           </div>
-          <h1 className="font-display text-4xl font-bold text-gradient">BunniX</h1>
+          <h1 className="font-display text-4xl font-bold text-gradient">HotFans</h1>
         </div>
 
         {/* Progress dots */}
@@ -202,53 +202,53 @@ export default function OnboardingPage() {
           {['username', 'role', step === 'creator_prefs' ? 'creator_prefs' : 'fan_prefs'].map((s, i) => (
             <div key={i} className={`h-1.5 rounded-full transition-all ${
               ['username', 'role', step].indexOf(s) <= ['username', 'role', step].indexOf(step)
-                ? 'w-8 bg-bunni-pink'
-                : 'w-4 bg-bunni-border'
+                ? 'w-8 bg-hf-red'
+                : 'w-4 bg-hf-border'
             }`} />
           ))}
         </div>
 
-        <div className="bg-bunni-card border border-bunni-border rounded-3xl p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-bunni opacity-60" />
+        <div className="bg-hf-card border border-hf-border rounded-3xl p-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-hf opacity-60" />
 
           {/* STEP 1: Username */}
           {step === 'username' && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-display text-2xl font-bold mb-1">Pick your name</h2>
-                <p className="text-bunni-muted text-sm">This is how everyone will know you</p>
+                <p className="text-hf-muted text-sm">This is how everyone will know you</p>
               </div>
 
               <div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bunni-muted font-mono">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-hf-muted font-mono">@</span>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     placeholder="your_username"
                     maxLength={20}
-                    className="w-full bg-bunni-dark border border-bunni-border rounded-xl pl-8 pr-10 py-3 text-bunni-text placeholder-bunni-muted focus:border-bunni-pink transition-all font-mono"
+                    className="w-full bg-hf-dark border border-hf-border rounded-xl pl-8 pr-10 py-3 text-hf-text placeholder-hf-muted focus:border-hf-orange transition-all font-mono"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm">
-                    {checking && <span className="text-bunni-muted animate-spin inline-block">⟳</span>}
-                    {!checking && available === true && username.length >= 3 && <span className="text-bunni-lime">✓</span>}
+                    {checking && <span className="text-hf-muted animate-spin inline-block">⟳</span>}
+                    {!checking && available === true && username.length >= 3 && <span className="text-green-400">✓</span>}
                     {!checking && available === false && <span className="text-red-400">✗</span>}
                   </div>
                 </div>
                 <div className="mt-2 text-xs font-mono">
                   {username.length >= 3 && !isValidUsername(username) && <span className="text-orange-400">Only letters, numbers, underscores</span>}
                   {isValidUsername(username) && available === false && <span className="text-red-400">@{username} is taken</span>}
-                  {isValidUsername(username) && available === true && <span className="text-bunni-lime">@{username} is available!</span>}
+                  {isValidUsername(username) && available === true && <span className="text-green-400">@{username} is available!</span>}
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-mono text-bunni-muted mb-2 tracking-widest uppercase">Suggestions</p>
+                <p className="text-xs font-mono text-hf-muted mb-2 tracking-widest uppercase">Suggestions</p>
                 <div className="flex flex-wrap gap-2">
                   {COOL_SUGGESTIONS.map((s) => (
                     <button key={s} type="button" onClick={() => setUsername(s)}
-                      className="text-xs font-mono px-3 py-1.5 rounded-lg bg-bunni-dark border border-bunni-border hover:border-bunni-pink hover:text-bunni-pink transition-all">
+                      className="text-xs font-mono px-3 py-1.5 rounded-lg bg-hf-dark border border-hf-border hover:border-hf-orange hover:text-hf-orange transition-all">
                       @{s}
                     </button>
                   ))}
@@ -258,7 +258,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleUsernameNext}
                 disabled={loading || !available || !isValidUsername(username)}
-                className="w-full bg-gradient-bunni text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all glow-pink"
+                className="w-full bg-gradient-hf text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all glow-red"
               >
                 {loading ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating...</span> : `Claim @${username || 'username'} →`}
               </button>
@@ -269,30 +269,30 @@ export default function OnboardingPage() {
           {step === 'role' && (
             <div className="space-y-6">
               <div>
-                <h2 className="font-display text-2xl font-bold mb-1">How will you use BunniX?</h2>
-                <p className="text-bunni-muted text-sm">You can change this later in settings</p>
+                <h2 className="font-display text-2xl font-bold mb-1">How will you use HotFans?</h2>
+                <p className="text-hf-muted text-sm">You can change this later in settings</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => handleRoleSelect('creator')}
-                  className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-bunni-border hover:border-bunni-pink hover:bg-bunni-pink/5 transition-all group"
+                  className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-hf-border hover:border-hf-orange hover:bg-hf-red/5 transition-all group"
                 >
                   <span className="text-4xl group-hover:scale-110 transition-transform">👑</span>
                   <div className="text-center">
                     <p className="font-display font-bold text-lg">Creator</p>
-                    <p className="text-xs text-bunni-muted mt-1">Post content, earn money, build your fanbase</p>
+                    <p className="text-xs text-hf-muted mt-1">Post content, earn money, build your fanbase</p>
                   </div>
                 </button>
 
                 <button
                   onClick={() => handleRoleSelect('fan')}
-                  className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-bunni-border hover:border-bunni-cyan hover:bg-bunni-cyan/5 transition-all group"
+                  className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-hf-border hover:border-hf-orange hover:bg-hf-orange/5 transition-all group"
                 >
                   <span className="text-4xl group-hover:scale-110 transition-transform">⭐</span>
                   <div className="text-center">
                     <p className="font-display font-bold text-lg">Fan</p>
-                    <p className="text-xs text-bunni-muted mt-1">Discover creators, subscribe, unlock exclusive content</p>
+                    <p className="text-xs text-hf-muted mt-1">Discover creators, subscribe, unlock exclusive content</p>
                   </div>
                 </button>
               </div>
@@ -304,12 +304,12 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="font-display text-2xl font-bold mb-1">Tell fans about yourself</h2>
-                <p className="text-bunni-muted text-sm">This helps fans find you and subscribe</p>
+                <p className="text-hf-muted text-sm">This helps fans find you and subscribe</p>
               </div>
 
               {/* Gender */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">Gender identity</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">Gender identity</label>
                 <div className="flex flex-wrap gap-2">
                   {[['male', 'Male'], ['female', 'Female'], ['trans_male', 'Trans Male'], ['trans_female', 'Trans Female'], ['non_binary', 'Non-Binary'], ['other', 'Other']].map(([val, label]) => (
                     <SelectButton key={val} value={val} current={genderIdentity} onClick={setGenderIdentity}>{label}</SelectButton>
@@ -319,7 +319,7 @@ export default function OnboardingPage() {
 
               {/* Content rating */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">Content rating</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">Content rating</label>
                 <div className="flex flex-wrap gap-2">
                   {[['softcore', 'Softcore'], ['explicit', 'Explicit'], ['fetish', 'Fetish/Kink']].map(([val, label]) => (
                     <SelectButton key={val} value={val} current={contentRating} onClick={setContentRating}>{label}</SelectButton>
@@ -329,7 +329,7 @@ export default function OnboardingPage() {
 
               {/* Body type */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">Body type</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">Body type</label>
                 <div className="flex flex-wrap gap-2">
                   {BODY_TYPES.map(bt => (
                     <SelectButton key={bt} value={bt} current={bodyType} onClick={setBodyType}>{bt.charAt(0).toUpperCase() + bt.slice(1)}</SelectButton>
@@ -339,7 +339,7 @@ export default function OnboardingPage() {
 
               {/* Categories */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">Content categories (select all that apply)</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">Content categories (select all that apply)</label>
                 <div className="flex flex-wrap gap-2">
                   {CONTENT_CATEGORIES.map(cat => (
                     <SelectButton key={cat} value={cat} current={contentCategories} onClick={(v: string) => toggleItem(contentCategories, setContentCategories, v)}>
@@ -351,9 +351,9 @@ export default function OnboardingPage() {
 
               {/* Subscription price */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">Monthly subscription price (what you receive)</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">Monthly subscription price (what you receive)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bunni-muted">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-hf-muted">$</span>
                   <input
                     type="number"
                     value={subscriptionPrice}
@@ -361,12 +361,12 @@ export default function OnboardingPage() {
                     placeholder="9.99"
                     min="3"
                     max="999"
-                    className="w-full bg-bunni-dark border border-bunni-border rounded-xl pl-8 pr-4 py-3 text-bunni-text placeholder-bunni-muted focus:border-bunni-pink transition-all"
+                    className="w-full bg-hf-dark border border-hf-border rounded-xl pl-8 pr-4 py-3 text-hf-text placeholder-hf-muted focus:border-hf-orange transition-all"
                   />
                 </div>
                 {subscriptionPrice && (
-                  <p className="text-xs text-bunni-muted mt-1 font-mono">
-                    Fans will pay <span className="text-bunni-lime">${(parseFloat(subscriptionPrice) * 1.30).toFixed(2)}</span> per month
+                  <p className="text-xs text-hf-muted mt-1 font-mono">
+                    Fans will pay <span className="text-green-400">${(parseFloat(subscriptionPrice) * 1.30).toFixed(2)}</span> per month
                   </p>
                 )}
               </div>
@@ -374,7 +374,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleCreatorFinish}
                 disabled={loading}
-                className="w-full bg-gradient-bunni text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all glow-pink"
+                className="w-full bg-gradient-hf text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all glow-red"
               >
                 {loading ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Setting up...</span> : 'Start Creating →'}
               </button>
@@ -386,12 +386,12 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="font-display text-2xl font-bold mb-1">What are you into?</h2>
-                <p className="text-bunni-muted text-sm">We will personalize your feed based on this</p>
+                <p className="text-hf-muted text-sm">We will personalize your feed based on this</p>
               </div>
 
               {/* Interested in */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">I am interested in</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">I am interested in</label>
                 <div className="flex flex-wrap gap-2">
                   {[['men', 'Men'], ['women', 'Women'], ['trans', 'Trans'], ['all', 'All of the above']].map(([val, label]) => (
                     <SelectButton key={val} value={val} current={interestedIn} onClick={(v: string) => toggleItem(interestedIn, setInterestedIn, v)}>{label}</SelectButton>
@@ -401,7 +401,7 @@ export default function OnboardingPage() {
 
               {/* Content formats */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">I mostly like</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">I mostly like</label>
                 <div className="flex flex-wrap gap-2">
                   {CONTENT_FORMATS.map(fmt => (
                     <SelectButton key={fmt} value={fmt} current={preferredFormats} onClick={(v: string) => toggleItem(preferredFormats, setPreferredFormats, v)}>
@@ -413,7 +413,7 @@ export default function OnboardingPage() {
 
               {/* Categories */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">My vibe is</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">My vibe is</label>
                 <div className="flex flex-wrap gap-2">
                   {CONTENT_CATEGORIES.map(cat => (
                     <SelectButton key={cat} value={cat} current={preferredCategories} onClick={(v: string) => toggleItem(preferredCategories, setPreferredCategories, v)}>
@@ -425,7 +425,7 @@ export default function OnboardingPage() {
 
               {/* Budget */}
               <div>
-                <label className="text-xs font-mono tracking-widest text-bunni-muted uppercase block mb-2">My monthly budget</label>
+                <label className="text-xs font-mono tracking-widest text-hf-muted uppercase block mb-2">My monthly budget</label>
                 <div className="flex flex-wrap gap-2">
                   {[['free', 'Just free stuff'], ['under_20', 'Under $20'], ['20_to_50', '$20-50'], ['50_plus', '$50+'], ['unlimited', 'Sky is the limit']].map(([val, label]) => (
                     <SelectButton key={val} value={val} current={budgetRange} onClick={setBudgetRange}>{label}</SelectButton>
@@ -434,14 +434,14 @@ export default function OnboardingPage() {
               </div>
 
               {/* Explicit toggle */}
-              <div className="flex items-center justify-between p-4 bg-bunni-dark rounded-xl border border-bunni-border">
+              <div className="flex items-center justify-between p-4 bg-hf-dark rounded-xl border border-hf-border">
                 <div>
                   <p className="text-sm font-medium">Show explicit content</p>
-                  <p className="text-xs text-bunni-muted mt-0.5">You must be 18+ to enable this</p>
+                  <p className="text-xs text-hf-muted mt-0.5">You must be 18+ to enable this</p>
                 </div>
                 <button
                   onClick={() => setShowExplicit(!showExplicit)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${showExplicit ? 'bg-bunni-pink' : 'bg-bunni-border'}`}
+                  className={`w-12 h-6 rounded-full transition-all relative ${showExplicit ? 'bg-hf-red' : 'bg-hf-border'}`}
                 >
                   <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${showExplicit ? 'left-6' : 'left-0.5'}`} />
                 </button>
@@ -450,7 +450,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleFanFinish}
                 disabled={loading}
-                className="w-full bg-gradient-bunni text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all glow-pink"
+                className="w-full bg-gradient-hf text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all glow-red"
               >
                 {loading ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Setting up...</span> : 'Start Exploring →'}
               </button>
@@ -461,3 +461,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+
