@@ -111,7 +111,7 @@ export default function FeedPage() {
     }
 
     // 6. Enrich with profile info
-    const userIds = [...new Set((feedPosts || []).map((p: any) => p.user_id))];
+    const userIds = Array.from(new Set((feedPosts || []).map((p: any) => p.user_id)));
     let profileMap: Record<string, any> = {};
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
@@ -190,4 +190,5 @@ export default function FeedPage() {
     </div>
   );
 }
+
 
