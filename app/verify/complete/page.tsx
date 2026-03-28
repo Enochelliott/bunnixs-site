@@ -14,15 +14,14 @@ function VerifyCompleteInner() {
   const [countdown, setCountdown] = useState(5);
 
   const isSuccess = status === 'success' || status === 'approved';
-  const isFailed = status === 'declined' || status === 'resubmission_requested';
-  const isPending = !isSuccess && !isFailed;
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const destination = profile?.role === 'creator' ? '/creator/dashboard' : profile?.role === 'fan' ? '/discover' : null;
 
-  const destination = profile?.role === 'creator' ? '/creator/dashboard' : '/discover';
+  useEffect(() => { if (profile) setProfileLoaded(true); }, [profile]);
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Identity verified! Welcome to HotFans 🔥', { duration: 5000 });
-    }
+    if (!profileLoaded || !destination) return;
+    if (isSuccess) toast.success('Identity verified! Welcome to HotFans 🔥', { duration: 5000 });
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) { clearInterval(timer); router.push(destination); return 0; }
@@ -30,6 +29,7 @@ function VerifyCompleteInner() {
       });
     }, 1000);
     return () => clearInterval(timer);
+  }, [router, destination, profileLoaded]);
   }, [router, destination]);
 
   return (
