@@ -118,8 +118,8 @@ export default function MessagesPage() {
 
   useEffect(() => {
     initStream();
-    return () => { getStreamClient().disconnectUser().catch(() => {}); };
     return () => {};
+  }, [initStream]);
 
   const startNewDm = async () => {
     if (!client || !user || !newDmUsername.trim()) return;
