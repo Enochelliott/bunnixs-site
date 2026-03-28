@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
-import { getStreamClient } from '@/lib/stream';
+import { StreamChat } from 'stream-chat';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { PPVComposer } from '@/components/PPVComposer';
@@ -22,8 +22,8 @@ const Window = dynamic(() => import('stream-chat-react').then(m => m.Window), { 
 import 'stream-chat-react/dist/css/v2/index.css';
 
 const supabase = createSupabaseBrowserClient();
+let persistentClient: StreamChat | null = null;
 
-// Renders PPV cards + videos + images for custom attachments
 function PPVAttachmentRenderer({ attachments }: { attachments?: any[] }) {
   const { profile } = useAuth();
   const isCreator = profile?.role === 'creator';
@@ -39,7 +39,7 @@ function PPVAttachmentRenderer({ attachments }: { attachments?: any[] }) {
           <video key={i} src={att.asset_url} controls className="max-w-xs rounded-xl" />
         ) : att.asset_url ? (
           <a key={i} href={att.asset_url} target="_blank" rel="noopener noreferrer"
-            className="text-bunni-cyan underline text-sm">{att.title || 'Download file'}</a>
+            className="text-hf-orange underline text-sm">{att.title || 'Download file'}</a>
         ) : null
       )}
     </div>
@@ -47,16 +47,24 @@ function PPVAttachmentRenderer({ attachments }: { attachments?: any[] }) {
 }
 
 export default function MessagesPage() {
-  const [client, setClient] = useState<ReturnType<typeof getStreamClient> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [client, setClient] = useState<StreamChat | null>(persistentClient);
+  const [loading, setLoading] = useState(!persistentClient?.userID);
   const [newDmUsername, setNewDmUsername] = useState('');
   const [showNewDm, setShowNewDm] = useState(false);
   const [showPPV, setShowPPV] = useState(false);
   const { user, profile } = useAuth();
   const { openProfileModal } = useNotifications();
   const isCreator = profile?.role === 'creator';
+  const initRef = useRef(false);
 
-  // Click interceptor for profile modals
+  useEffect(() => {
+    if (!user || !profile) return;
+    if (persistentClient?.userID) { setClient(persistentClient); setLoading(false); return; }
+    if (initRef.current) return;
+    initRef.current = true;
+    initStream();
+  }, [user, profile]);
+
   useEffect(() => {
     if (!user) return;
     const handler = (e: MouseEvent) => {
@@ -76,12 +84,9 @@ export default function MessagesPage() {
           const nameEl = msg?.querySelector('.str-chat__message-sender-name, .str-chat__channel-preview-title');
           text = nameEl?.textContent?.trim() || '';
         }
-      } else {
-        text = clickable.textContent?.trim() || '';
-      }
+      } else { text = clickable.textContent?.trim() || ''; }
       if (!text || text === profile?.username) return;
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       const username = text.replace(/^@/, '').toLowerCase().trim();
       if (username && username.length > 1) openProfileModal(username);
     };
@@ -89,7 +94,7 @@ export default function MessagesPage() {
     return () => document.removeEventListener('click', handler, true);
   }, [user, profile, openProfileModal]);
 
-  const initStream = useCallback(async () => {
+  const initStream = async () => {
     if (!user || !profile) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -100,13 +105,14 @@ export default function MessagesPage() {
       });
       if (!res.ok) throw new Error('Token failed');
       const { token } = await res.json();
-      const streamClient = getStreamClient();
+      const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY!);
       if (!streamClient.userID) {
         await streamClient.connectUser(
           { id: user.id, name: profile.username, image: profile.avatar_url || undefined },
           token
         );
       }
+      persistentClient = streamClient;
       setClient(streamClient);
     } catch (err) {
       console.error('Stream init error:', err);
@@ -114,30 +120,20 @@ export default function MessagesPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, profile]);
-
-  useEffect(() => {
-    initStream();
-    return () => {};
-  }, [initStream]);
+  };
 
   const startNewDm = async () => {
     if (!client || !user || !newDmUsername.trim()) return;
     try {
-      const response = await client.queryUsers(
-        { name: { $autocomplete: newDmUsername.toLowerCase() } }, {}, { limit: 5 }
-      );
+      const response = await client.queryUsers({ name: { $autocomplete: newDmUsername.toLowerCase() } }, {}, { limit: 5 });
       if (!response.users.length) { toast.error(`No user: @${newDmUsername}`); return; }
       const targetUser = response.users.find((u: any) => u.id !== user.id);
       if (!targetUser) { toast.error('Cannot DM yourself'); return; }
       const channel = client.channel('messaging', { members: [user.id, targetUser.id] });
       await channel.watch();
-      setNewDmUsername('');
-      setShowNewDm(false);
+      setNewDmUsername(''); setShowNewDm(false);
       toast.success(`DM started with @${targetUser.name}!`);
-    } catch (err) {
-      toast.error('Could not start DM');
-    }
+    } catch (err) { toast.error('Could not start DM'); }
   };
 
   const sendPPV = async (attachment: any) => {
@@ -147,27 +143,25 @@ export default function MessagesPage() {
     try {
       await channel.sendMessage({ text: '', attachments: [attachment] });
       toast.success('PPV offer sent! 💎');
-    } catch (err) {
-      toast.error('Could not send PPV');
-    }
+    } catch (err) { toast.error('Could not send PPV'); }
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-bunni-dark">
+    <div className="flex items-center justify-center bg-hf-dark" style={{ height: 'calc(100vh - 57px)' }}>
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-bunni-pink/30 border-t-bunni-pink rounded-full animate-spin" />
-        <p className="text-bunni-muted text-sm font-mono">Connecting to messages...</p>
+        <div className="w-12 h-12 border-2 border-hf-orange/30 border-t-hf-orange rounded-full animate-spin" />
+        <p className="text-hf-muted text-sm font-mono">Connecting to messages...</p>
       </div>
     </div>
   );
 
   if (!client) return (
-    <div className="flex items-center justify-center h-screen bg-bunni-dark">
+    <div className="flex items-center justify-center bg-hf-dark" style={{ height: 'calc(100vh - 57px)' }}>
       <div className="text-center">
         <p className="text-5xl mb-4">💬</p>
-        <p className="text-bunni-muted mb-2">Could not connect to messaging.</p>
-        <button onClick={() => { setLoading(true); initStream(); }}
-          className="mt-4 px-4 py-2 bg-bunni-pink text-white rounded-xl text-sm hover:opacity-90 transition-all">
+        <p className="text-hf-muted mb-2">Could not connect to messaging.</p>
+        <button onClick={() => { setLoading(true); initRef.current = false; initStream(); }}
+          className="mt-4 px-4 py-2 bg-gradient-hf text-white rounded-xl text-sm hover:opacity-90 transition-all">
           Retry
         </button>
       </div>
@@ -179,37 +173,28 @@ export default function MessagesPage() {
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
       {showPPV && <PPVComposer onSend={sendPPV} onClose={() => setShowPPV(false)} />}
-      <div className="px-6 py-4 border-b border-bunni-border flex items-center justify-between bg-bunni-card flex-shrink-0">
+      <div className="px-6 py-4 border-b border-hf-border flex items-center justify-between bg-hf-card flex-shrink-0">
         <h1 className="font-display text-2xl font-bold text-gradient">Messages</h1>
-        <button onClick={() => setShowNewDm(!showNewDm)}
-          className="bg-gradient-bunni text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-all">
+        <button onClick={() => setShowNewDm(!showNewDm)} className="bg-gradient-hf text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-all">
           {showNewDm ? '✕ Cancel' : '+ New DM'}
         </button>
       </div>
-
       {showNewDm && (
-        <div className="px-6 py-3 border-b border-bunni-border bg-bunni-dark flex gap-3 flex-shrink-0">
+        <div className="px-6 py-3 border-b border-hf-border bg-hf-dark flex gap-3 flex-shrink-0">
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-bunni-muted font-mono text-sm">@</span>
-            <input type="text" value={newDmUsername}
-              onChange={e => setNewDmUsername(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && startNewDm()}
-              placeholder="username" autoFocus
-              className="w-full bg-bunni-card border border-bunni-border rounded-xl pl-7 pr-4 py-2 text-sm focus:border-bunni-pink transition-colors font-mono" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-hf-muted font-mono text-sm">@</span>
+            <input type="text" value={newDmUsername} onChange={e => setNewDmUsername(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && startNewDm()} placeholder="username" autoFocus
+              className="w-full bg-hf-card border border-hf-border rounded-xl pl-7 pr-4 py-2 text-sm text-hf-text focus:border-hf-orange transition-colors font-mono" />
           </div>
-          <button onClick={startNewDm} disabled={!newDmUsername.trim()}
-            className="bg-bunni-pink text-white text-sm px-4 py-2 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all">
-            Start
-          </button>
+          <button onClick={startNewDm} disabled={!newDmUsername.trim()} className="bg-hf-red text-white text-sm px-4 py-2 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all">Start</button>
         </div>
       )}
-
       <div className="flex-1 overflow-hidden">
         <Chat client={client} theme="str-chat__theme-dark">
           <div className="flex h-full">
-            <div className="w-72 flex-shrink-0 border-r border-bunni-border overflow-y-auto">
+            <div className="w-72 flex-shrink-0 border-r border-hf-border overflow-y-auto">
               <ChannelList filters={filters} sort={sort} />
             </div>
             <div className="flex-1 overflow-hidden">
@@ -219,9 +204,8 @@ export default function MessagesPage() {
                   <MessageList />
                   <div className="relative">
                     {isCreator && (
-                      <div className="px-3 pt-2 pb-1 border-t border-bunni-border flex items-center">
-                        <button onClick={() => setShowPPV(true)}
-                          className="bg-bunni-dark border border-bunni-pink/40 text-bunni-pink text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-bunni-pink/10 transition-all whitespace-nowrap">
+                      <div className="px-3 pt-2 pb-1 border-t border-hf-border flex items-center">
+                        <button onClick={() => setShowPPV(true)} className="bg-hf-dark border border-hf-orange/40 text-hf-orange text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-hf-orange/10 transition-all whitespace-nowrap">
                           📸💰 Sell Pics/Vids
                         </button>
                       </div>
