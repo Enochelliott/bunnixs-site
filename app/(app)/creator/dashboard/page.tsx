@@ -23,7 +23,7 @@ export default function CreatorDashboard() {
       supabase.from('posts').select('*, profile:profiles!posts_user_id_fkey(id, username, avatar_url)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
     ]);
     setPosts((postsRes.data || []) as Post[]);
-    setWallet(walletRes.data);
+    setWallet(walletRes.data as CreatorWallet | null);
     setLoading(false);
   }, [user]);
 
