@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-bunni-dark text-bunni-text font-body antialiased">
+      <body className="bg-hf-dark text-hf-text font-body antialiased">
         <AuthProvider>
           {children}
         </AuthProvider>
@@ -64,3 +64,4 @@ export default function RootLayout({
     </html>
   );
 }
+
