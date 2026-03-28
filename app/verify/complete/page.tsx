@@ -1,6 +1,6 @@
 'use client';
-import { Suspense } from 'react';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,15 +12,19 @@ function VerifyCompleteInner() {
   const { profile } = useAuth();
   const status = searchParams.get('status') || 'pending';
   const [countdown, setCountdown] = useState(5);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const isSuccess = status === 'success' || status === 'approved';
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  const destination = profile?.role === 'creator' ? '/creator/dashboard' : profile?.role === 'fan' ? '/discover' : null;
-
-  useEffect(() => { if (profile) setProfileLoaded(true); }, [profile]);
+  const isFailed = status === 'declined' || status === 'resubmission_requested';
+  const isPending = !isSuccess && !isFailed;
 
   useEffect(() => {
-    if (!profileLoaded || !destination) return;
+    if (profile) setProfileLoaded(true);
+  }, [profile]);
+
+  useEffect(() => {
+    if (!profileLoaded) return;
+    const destination = profile?.role === 'creator' ? '/creator/dashboard' : '/discover';
     if (isSuccess) toast.success('Identity verified! Welcome to HotFans 🔥', { duration: 5000 });
     const timer = setInterval(() => {
       setCountdown(prev => {
@@ -29,8 +33,9 @@ function VerifyCompleteInner() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [router, destination, profileLoaded]);
-  }, [router, destination]);
+  }, [router, profileLoaded, profile, isSuccess]);
+
+  const destination = profile?.role === 'creator' ? '/creator/dashboard' : '/discover';
 
   return (
     <div className="min-h-screen bg-hf-dark flex items-center justify-center p-6">
@@ -96,4 +101,6 @@ function VerifyCompleteInner() {
   );
 }
 
-export default function VerifyCompletePage() { return <Suspense><VerifyCompleteInner /></Suspense>; }
+export default function VerifyCompletePage() {
+  return <Suspense><VerifyCompleteInner /></Suspense>;
+}
