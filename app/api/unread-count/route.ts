@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       .single();
 
     // Use server client to generate a user token
-    const serverClient = StreamChat.getInstance(
+    const serverClient = new StreamChat(
       process.env.NEXT_PUBLIC_STREAM_API_KEY!,
       process.env.STREAM_API_SECRET!
     );
@@ -101,3 +101,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ count: 0 });
   }
 }
+
