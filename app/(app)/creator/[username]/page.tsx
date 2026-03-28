@@ -29,11 +29,11 @@ export default function CreatorProfilePage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showReport, setShowReport] = useState<string | null>(null);
 
-      .select('*')
+  // ─── Fetch creator profile ────────────────────────────────────────────────
   const fetchCreator = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*, profile:profiles(id, username, avatar_url, is_verified_creator)')
+      .select('*')
       .eq('username', username.toLowerCase())
       .eq('role', 'creator')
       .single();
@@ -82,7 +82,7 @@ export default function CreatorProfilePage() {
     // We also fetch PPV purchase status so UI can show lock correctly
     const { data: postsData } = await supabase
       .from('posts')
-      .select('*, profile:profiles(id, username, avatar_url, is_verified_creator)')
+      .select('*')
       .eq('user_id', creator.id)
       .order('created_at', { ascending: false })
       .limit(100);
@@ -190,8 +190,8 @@ export default function CreatorProfilePage() {
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen bg-bunni-dark flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-bunni-pink/30 border-t-bunni-pink rounded-full animate-spin" />
+      <div className="min-h-screen bg-hf-dark flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-hf-orange/30 border-t-hf-orange rounded-full animate-spin" />
       </div>
     );
   }
@@ -206,7 +206,7 @@ export default function CreatorProfilePage() {
   return (
     <div className="max-w-2xl mx-auto pb-16">
       {/* ── Cover ── */}
-      <div className="relative h-48 bg-gradient-to-br from-bunni-purple/30 to-bunni-pink/30 rounded-b-3xl overflow-hidden">
+      <div className="relative h-48 bg-gradient-to-br from-hf-red/30 to-hf-orange/30 rounded-b-3xl overflow-hidden">
         {creator.cover_url && (
           <Image src={creator.cover_url} alt="" fill className="object-cover" />
         )}
@@ -217,7 +217,7 @@ export default function CreatorProfilePage() {
       <div className="px-6 -mt-12 relative z-10">
         <div className="flex items-end justify-between mb-4">
           {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-bunni-dark bg-gradient-bunni shadow-xl">
+          <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-bunni-dark bg-gradient-hf shadow-xl">
             {creator.avatar_url ? (
               <Image src={creator.avatar_url} alt={creator.username} width={96} height={96} className="w-full h-full object-cover" />
             ) : (
@@ -230,13 +230,13 @@ export default function CreatorProfilePage() {
           {/* Action buttons */}
           <div className="flex gap-2 pb-1">
             {/* Share / private link */}
-          <div className="flex gap-2 pb-1 flex-wrap">
-            {/* Message button — non-owners only */}
-            {!isOwnProfile && (
-              <button onClick={() => router.push('/messages')} className="px-3 py-2 rounded-xl border border-hf-border text-hf-muted hover:border-hf-orange hover:text-hf-orange text-xs font-mono transition-all">💬</button>
-            )}
-            {/* Share */}
             <button
+              onClick={copyShareLink}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono transition-all ${
+                linkCopied
+                  ? 'border-green-400 text-green-400 bg-green-400/10'
+                  : 'border-hf-border text-hf-muted hover:border-hf-orange hover:text-hf-orange'
+              }`}
               title="Copy profile link"
             >
               {linkCopied ? '✓ Copied!' : '🔗 Share'}
@@ -246,25 +246,25 @@ export default function CreatorProfilePage() {
             {isOwnProfile ? (
               <button
                 onClick={() => router.push('/profile')}
-                className="px-4 py-2 rounded-xl border border-bunni-border text-xs font-semibold text-bunni-muted hover:border-bunni-pink hover:text-bunni-pink transition-all"
+                className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all"
               >
                 Edit Profile
               </button>
+            ) : isSubscribed ? (
+              <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">
+                ✓ Subscribed
+              </button>
             ) : (
-              <div className="flex items-center gap-2">
-                <BlockButton targetId={creator.id} targetUsername={creator.username} onBlock={() => router.push('/discover')} />
-                <SubscribeButton creatorId={creator.id} creatorUsername={creator.username} subscriptionPrice={creator.subscription_price || 0} onSubscribed={() => setIsSubscribed(true)} />
-              </div>
+              <button
+                onClick={handleSubscribe}
+                className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-pink"
+              >
+                Subscribe {creator.subscription_price
+                  ? `$${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo`
+                  : '· Free'}
+              </button>
             )}
           </div>
-        </div>
-
-
-
-
-
-
-
         </div>
 
         {/* Name + badges */}
@@ -274,29 +274,29 @@ export default function CreatorProfilePage() {
               {creator.display_name || creator.username}
             </h1>
             {creator.is_verified_creator && (
-              <span className="text-xs bg-bunni-pink/15 text-bunni-pink border border-bunni-pink/20 px-2 py-0.5 rounded-full font-mono">
+              <span className="text-xs bg-hf-orange/15 text-hf-orange border border-hf-orange/20 px-2 py-0.5 rounded-full font-mono">
                 ✓ Verified
               </span>
             )}
             {creator.content_rating && (
-              <span className="text-xs bg-bunni-border text-bunni-muted px-2 py-0.5 rounded-full font-mono">
+              <span className="text-xs bg-bunni-border text-hf-muted px-2 py-0.5 rounded-full font-mono">
                 {creator.content_rating}
               </span>
             )}
           </div>
-          <p className="text-bunni-muted text-sm font-mono">@{creator.username}</p>
+          <p className="text-hf-muted text-sm font-mono">@{creator.username}</p>
         </div>
 
         {/* Bio */}
         {creator.bio && (
-          <p className="text-bunni-text text-sm leading-relaxed mb-4">{creator.bio}</p>
+          <p className="text-hf-text text-sm leading-relaxed mb-4">{creator.bio}</p>
         )}
 
         {/* Categories */}
         {creator.content_categories && creator.content_categories.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {creator.content_categories.map(cat => (
-              <span key={cat} className="text-xs bg-bunni-purple/15 text-bunni-purple border border-bunni-purple/20 px-2.5 py-1 rounded-full font-mono">
+              <span key={cat} className="text-xs bg-hf-red/15 text-hf-red border border-hf-red/20 px-2.5 py-1 rounded-full font-mono">
                 {cat}
               </span>
             ))}
@@ -306,29 +306,29 @@ export default function CreatorProfilePage() {
         {/* Post stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Free Posts', count: freePostCount, color: 'text-bunni-lime', icon: '🌍' },
-            { label: 'Subscriber', count: subscriberPostCount, color: 'text-bunni-purple', icon: '⭐' },
-            { label: 'PPV', count: ppvPostCount, color: 'text-bunni-pink', icon: '💎' },
+            { label: 'Free Posts', count: freePostCount, color: 'text-green-400', icon: '🌍' },
+            { label: 'Subscriber', count: subscriberPostCount, color: 'text-hf-red', icon: '⭐' },
+            { label: 'PPV', count: ppvPostCount, color: 'text-hf-orange', icon: '💎' },
           ].map(stat => (
-            <div key={stat.label} className="bg-bunni-card border border-bunni-border rounded-xl p-3 text-center">
+            <div key={stat.label} className="bg-hf-card border border-hf-border rounded-xl p-3 text-center">
               <p className="text-lg mb-0.5">{stat.icon}</p>
               <p className={`font-display text-xl font-bold ${stat.color}`}>{stat.count}</p>
-              <p className="text-xs text-bunni-muted font-mono">{stat.label}</p>
+              <p className="text-xs text-hf-muted font-mono">{stat.label}</p>
             </div>
           ))}
         </div>
 
         {/* Private link banner */}
-        <div className="bg-bunni-card border border-bunni-border rounded-xl p-3 mb-6 flex items-center justify-between">
+        <div className="bg-hf-card border border-hf-border rounded-xl p-3 mb-6 flex items-center justify-between">
           <div>
-            <p className="text-xs font-mono text-bunni-muted uppercase tracking-widest mb-0.5">Your profile link</p>
-            <p className="text-sm font-mono text-bunni-pink truncate">
+            <p className="text-xs font-mono text-hf-muted uppercase tracking-widest mb-0.5">Your profile link</p>
+            <p className="text-sm font-mono text-hf-orange truncate">
               bunnix.com/c/{creator.username}
             </p>
           </div>
           <button
             onClick={copyShareLink}
-            className="text-xs text-bunni-muted hover:text-bunni-pink transition-colors font-mono px-3 py-1.5 border border-bunni-border hover:border-bunni-pink rounded-lg"
+            className="text-xs text-hf-muted hover:text-hf-orange transition-colors font-mono px-3 py-1.5 border border-hf-border hover:border-hf-orange rounded-lg"
           >
             {linkCopied ? '✓' : 'Copy'}
           </button>
@@ -337,12 +337,12 @@ export default function CreatorProfilePage() {
 
       {/* ── Posts feed ── */}
       <div className="px-6">
-        <h2 className="font-display text-lg font-semibold mb-4 text-bunni-muted">Posts</h2>
+        <h2 className="font-display text-lg font-semibold mb-4 text-hf-muted">Posts</h2>
 
         {loadingPosts ? (
           <div className="space-y-4">
             {[1, 2].map(i => (
-              <div key={i} className="bg-bunni-card border border-bunni-border rounded-2xl p-5 space-y-3">
+              <div key={i} className="bg-hf-card border border-hf-border rounded-2xl p-5 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full shimmer" />
                   <div className="space-y-1.5">
@@ -358,7 +358,7 @@ export default function CreatorProfilePage() {
           <div className="text-center py-16">
             <div className="text-5xl mb-4">✨</div>
             <p className="font-display text-lg font-semibold mb-1">No posts yet</p>
-            <p className="text-bunni-muted text-sm">Check back soon!</p>
+            <p className="text-hf-muted text-sm">Check back soon!</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -368,22 +368,22 @@ export default function CreatorProfilePage() {
               // ── Locked post UI ──
               if (!canView) {
                 return (
-                  <div key={post.id} className="bg-bunni-card border border-bunni-border rounded-2xl overflow-hidden">
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
                     <div className="p-5">
                       {/* Blurred preview */}
-                      <div className="relative rounded-xl overflow-hidden bg-bunni-dark h-40 flex items-center justify-center mb-4">
-                        <div className="absolute inset-0 bg-gradient-to-br from-bunni-purple/20 to-bunni-pink/20 blur-sm" />
+                      <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center mb-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-hf-red/20 to-hf-orange/20 blur-sm" />
                         <div className="relative z-10 text-center">
                           {post.visibility === 'subscribers' ? (
                             <>
                               <p className="text-3xl mb-2">🔒</p>
                               <p className="font-display font-semibold text-sm">Subscribers Only</p>
-                              <p className="text-xs text-bunni-muted mt-1">
+                              <p className="text-xs text-hf-muted mt-1">
                                 Subscribe for ${calculateFanPrice(creator.subscription_price || 0).toFixed(2)}/mo to unlock
                               </p>
                               <button
                                 onClick={handleSubscribe}
-                                className="mt-3 px-4 py-1.5 bg-gradient-bunni text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                                className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
                               >
                                 Subscribe to Unlock
                               </button>
@@ -392,12 +392,12 @@ export default function CreatorProfilePage() {
                             <>
                               <p className="text-3xl mb-2">💎</p>
                               <p className="font-display font-semibold text-sm">Pay Per View</p>
-                              <p className="text-xs text-bunni-muted mt-1">
+                              <p className="text-xs text-hf-muted mt-1">
                                 Unlock for ${post.ppv_price ? calculateFanPrice(post.ppv_price).toFixed(2) : '?'}
                               </p>
                               <button
                                 onClick={() => toast('PPV unlocks coming soon! 🚀', { icon: '💎' })}
-                                className="mt-3 px-4 py-1.5 bg-bunni-pink text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                                className="mt-3 px-4 py-1.5 bg-hf-orange text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
                               >
                                 Unlock Post
                               </button>
@@ -422,13 +422,13 @@ export default function CreatorProfilePage() {
                     <div className="absolute top-4 right-4 z-20">
                       <button
                         onClick={() => setShowReport(showReport === post.id ? null : post.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-all text-xs text-bunni-muted hover:text-orange-400 bg-bunni-dark/80 border border-bunni-border px-2 py-1 rounded-lg font-mono"
+                        className="opacity-0 group-hover:opacity-100 transition-all text-xs text-hf-muted hover:text-orange-400 bg-hf-dark/80 border border-hf-border px-2 py-1 rounded-lg font-mono"
                       >
                         ⚑ Report
                       </button>
                       {showReport === post.id && (
-                        <div className="absolute right-0 top-8 bg-bunni-dark border border-bunni-border rounded-xl overflow-hidden shadow-2xl z-30 w-48 animate-slide-up">
-                          <p className="px-3 py-2 text-xs font-mono text-bunni-muted uppercase tracking-widest border-b border-bunni-border">
+                        <div className="absolute right-0 top-8 bg-hf-dark border border-hf-border rounded-xl overflow-hidden shadow-2xl z-30 w-48 animate-slide-up">
+                          <p className="px-3 py-2 text-xs font-mono text-hf-muted uppercase tracking-widest border-b border-hf-border">
                             Report reason
                           </p>
                           {[
