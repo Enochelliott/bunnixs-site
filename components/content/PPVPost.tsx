@@ -81,11 +81,11 @@ export default function PPVPost({ post, onPurchased }: Props) {
               src={thumbnail}
               alt=""
               fill
-              className="object-cover blur-xl scale-110"
+              className="object-cover blur-md scale-105"
               sizes="600px"
             />
             {/* Dark overlay */}
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-black/30" />
           </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-hf-red/20 to-hf-orange/20 flex items-center justify-center">
