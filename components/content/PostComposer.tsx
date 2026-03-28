@@ -241,10 +241,9 @@ export default function PostComposer({ onPost }: Props) {
       <PPVClipTrimmer
         videoFile={videoFile}
         videoUrl={videoPreviewUrl}
-        onConfirm={(start, duration, thumb) => {
+        onConfirm={(start, clipLen) => {
           setClipStart(start);
-          setClipDuration(duration);
-          setThumbnailDataUrl(thumb);
+          setClipDuration(clipLen);
           setShowTrimmer(false);
         }}
         onClose={() => setShowTrimmer(false)}
