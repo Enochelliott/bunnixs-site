@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Build Veriff session payload
     const sessionPayload: any = {
       verification: {
-        callback: `\/verify/complete`,
+        callback: 'https://www.bunniprintx.com/verify/complete',
         person: {
           firstName: ' ',
           lastName: ' ',
