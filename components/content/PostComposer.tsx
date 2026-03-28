@@ -42,6 +42,8 @@ const dataURLtoBlob = (dataURL: string): Blob => {
   return new Blob([u8arr], { type: mime });
 };
 
+import PPVClipTrimmer from './PPVClipTrimmer';
+
 export default function PostComposer({ onPost }: Props) {
   const { user, profile } = useAuth();
   const [content, setContent] = useState('');
@@ -51,6 +53,9 @@ export default function PostComposer({ onPost }: Props) {
   const [previews, setPreviews] = useState<string[]>([]);
   const [thumbnailDataUrl, setThumbnailDataUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showTrimmer, setShowTrimmer] = useState(false);
+  const [clipStart, setClipStart] = useState(0);
+  const [clipDuration, setClipDuration] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [cancelled, setCancelled] = useState(false);
   const cancelRef = useRef(false);
@@ -60,6 +65,9 @@ export default function PostComposer({ onPost }: Props) {
     if (!selected) return;
     const arr = Array.from(selected);
     setFiles(arr);
+    // Auto-show trimmer if PPV is already selected and we have a video
+    const hasVideo = arr.some(f => f.type.startsWith('video/'));
+    if (hasVideo && visibility === 'ppv') { setShowTrimmer(true); }
     cancelRef.current = false;
     setCancelled(false);
 
@@ -210,7 +218,11 @@ export default function PostComposer({ onPost }: Props) {
     }
   };
 
-  if (!profile?.is_verified_creator) return null;
+  const handleVisibilityChange = (v: Visibility) => {
+    setVisibility(v);
+    const hasVideo = files.some(f => f.type.startsWith('video/'));
+    if (v === 'ppv' && hasVideo) setShowTrimmer(true);
+  };
 
   const visibilityOptions: { value: Visibility; label: string; color: string }[] = [
     { value: 'free', label: '🌍 Free', color: 'text-green-400 border-green-400/40 bg-green-400/10' },
@@ -218,7 +230,24 @@ export default function PostComposer({ onPost }: Props) {
     { value: 'ppv', label: '💎 PPV', color: 'text-hf-red border-hf-red/40 bg-hf-red/10' },
   ];
 
+  const videoFile = files.find(f => f.type.startsWith('video/'));
+  const videoPreviewUrl = videoFile ? previews[files.indexOf(videoFile)] : null;
+
   return (
+    <>
+    {showTrimmer && videoFile && videoPreviewUrl && (
+      <PPVClipTrimmer
+        videoFile={videoFile}
+        videoUrl={videoPreviewUrl}
+        onConfirm={(start, duration, thumb) => {
+          setClipStart(start);
+          setClipDuration(duration);
+          setThumbnailDataUrl(thumb);
+          setShowTrimmer(false);
+        }}
+        onClose={() => setShowTrimmer(false)}
+      />
+    )}
     <div className="bg-hf-card border border-hf-border rounded-2xl p-5 mb-6">
       {/* Text input */}
       <textarea
@@ -327,7 +356,7 @@ export default function PostComposer({ onPost }: Props) {
           {visibilityOptions.map(opt => (
             <button
               key={opt.value}
-              onClick={() => setVisibility(opt.value)}
+              onClick={() => handleVisibilityChange(opt.value)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-mono border transition-all ${
                 visibility === opt.value ? opt.color : 'border-hf-border text-hf-muted hover:border-hf-muted'
               }`}
@@ -347,5 +376,7 @@ export default function PostComposer({ onPost }: Props) {
         </button>
       </div>
     </div>
+  );
+  </>
   );
 }
