@@ -86,7 +86,7 @@ export default function CreatorProfilePage() {
       .eq('user_id', creator.id)
       .order('created_at', { ascending: false })
       .limit(100);
-
+    if (!postsData || postsData.length === 0) { setLoadingPosts(false); return; }
     if (!postsData) { setLoadingPosts(false); return; }
 
     // Get PPV purchases for this fan
