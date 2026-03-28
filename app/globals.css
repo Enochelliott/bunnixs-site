@@ -101,3 +101,15 @@ html.light select {
   color: #1A0A00 !important;
   caret-color: #CC2400 !important;
 }
+
+/* Fix all input text visibility */
+input, textarea, select {
+  color: #FFF5EE !important;
+  caret-color: #FF6B00 !important;
+}
+
+.str-chat__message-input input,
+.str-chat__message-input textarea {
+  color: #FFF5EE !important;
+  caret-color: #FF6B00 !important;
+}
