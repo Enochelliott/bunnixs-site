@@ -179,8 +179,8 @@ export default function MessagesPage() {
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
-
-
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
+      {showPPV && <PPVComposer onSend={sendPPV} onClose={() => setShowPPV(false)} />}
       <div className="px-6 py-4 border-b border-bunni-border flex items-center justify-between bg-bunni-card flex-shrink-0">
         <h1 className="font-display text-2xl font-bold text-gradient">Messages</h1>
         <button onClick={() => setShowNewDm(!showNewDm)}
