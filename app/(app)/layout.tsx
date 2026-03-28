@@ -26,11 +26,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     if (loading) return;
     if (redirected.current) return;
     if (!user) { redirected.current = true; router.push('/'); return; }
-    if (user && !profile) { redirected.current = true; router.push('/onboarding'); return; }
     if (user && !profile) { setTimeout(() => { if (!profile) { redirected.current = true; router.push('/onboarding'); } }, 2000); return; }
+  }, [loading, user, profile, router]);
 
   useEffect(() => { redirected.current = false; }, [user?.id, profile?.id]);
-
   if (loading && !user) {
     return (
       <div className="min-h-screen bg-hf-dark flex items-center justify-center">
@@ -165,3 +164,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </NotificationProvider>
   );
 }
+
