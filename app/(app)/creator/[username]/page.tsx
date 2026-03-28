@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Profile, Post, calculateFanPrice } from '@/lib/types';
 import PostCard from '@/components/PostCard';
+import PPVPost from '@/components/content/PPVPost';
 import toast from 'react-hot-toast';
 import SubscribeButton from '@/components/subscriptions/SubscribeButton';
 import BlockButton from '@/components/blocking/BlockButton';
@@ -364,61 +364,61 @@ export default function CreatorProfilePage() {
             {posts.map(post => {
               const canView = canViewPost(post);
 
-              // ── Locked post UI ──
+              // ── PPV post — use PPVPost component ──
+              if (post.visibility === 'ppv' && !canView) {
+                return <PPVPost key={post.id} post={post} onPurchased={() => fetchPosts()} />;
+              }
+              // ── Subscribers locked UI ──
               if (!canView) {
                 return (
-                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
-                    <div className="p-5">
-                      {/* Blurred preview */}
-                      <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center mb-4">
-                        <div className="absolute inset-0 bg-gradient-to-br from-hf-red/20 to-hf-orange/20 blur-sm" />
-                        <div className="relative z-10 text-center">
-                          {post.visibility === 'subscribers' ? (
-                            <>
-                              <p className="text-3xl mb-2">🔒</p>
-                              <p className="font-display font-semibold text-sm">Subscribers Only</p>
-                              <p className="text-xs text-hf-muted mt-1">
-                                Subscribe for ${calculateFanPrice(creator.subscription_price || 0).toFixed(2)}/mo to unlock
-                              </p>
-                              <button
-                                onClick={handleSubscribe}
-                                className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
-                              >
-                                Subscribe to Unlock
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <p className="text-3xl mb-2">💎</p>
-                              <p className="font-display font-semibold text-sm">Pay Per View</p>
-                              <p className="text-xs text-hf-muted mt-1">
-                                Unlock for ${post.ppv_price ? calculateFanPrice(post.ppv_price).toFixed(2) : '?'}
-                              </p>
-                              <button
-                                onClick={() => toast('PPV unlocks coming soon! 🚀', { icon: '💎' })}
-                                className="mt-3 px-4 py-1.5 bg-hf-orange text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
-                              >
-                                Unlock Post
-                              </button>
-                            </>
-                          )}
-                        </div>
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden p-5">
+                    <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-3xl mb-2">🔒</p>
+                        <p className="font-display font-semibold text-sm">Subscribers Only</p>
+                        <p className="text-xs text-hf-muted mt-1">Subscribe to unlock</p>
+                        <button onClick={handleSubscribe} className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">Subscribe to Unlock</button>
                       </div>
                     </div>
                   </div>
                 );
               }
-
               // ── Visible post ──
               return (
                 <div key={post.id} className="relative group">
-                  <PostCard
-                    post={post}
-                    onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined}
-                  />
-                  {/* Report button — visible on hover, non-owners only */}
-                  {!isOwnProfile && user && (
-                    <div className="absolute top-4 right-4 z-20">
+                  <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
+                </div>
+              );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                       <button
                         onClick={() => setShowReport(showReport === post.id ? null : post.id)}
                         className="opacity-0 group-hover:opacity-100 transition-all text-xs text-hf-muted hover:text-orange-400 bg-hf-dark/80 border border-hf-border px-2 py-1 rounded-lg font-mono"
