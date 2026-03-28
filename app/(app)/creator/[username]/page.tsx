@@ -33,7 +33,7 @@ export default function CreatorProfilePage() {
   const fetchCreator = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*, profile:profiles(id, username, avatar_url, is_verified_creator)')
       .eq('username', username.toLowerCase())
       .eq('role', 'creator')
       .single();
@@ -82,7 +82,7 @@ export default function CreatorProfilePage() {
     // We also fetch PPV purchase status so UI can show lock correctly
     const { data: postsData } = await supabase
       .from('posts')
-      .select('*')
+      .select('*, profile:profiles(id, username, avatar_url, is_verified_creator)')
       .eq('user_id', creator.id)
       .order('created_at', { ascending: false })
       .limit(100);
