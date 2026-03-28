@@ -46,7 +46,7 @@ export default function PurchasesPage() {
       .eq('fan_id', user!.id)
       .eq('status', 'completed')
       .order('created_at', { ascending: false });
-    setPurchases((data || []) as Purchase[]);
+    setPurchases((data || []) as unknown as Purchase[]);
     setLoading(false);
   };
 
