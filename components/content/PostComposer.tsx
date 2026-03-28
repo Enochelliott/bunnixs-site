@@ -174,6 +174,8 @@ export default function PostComposer({ onPost }: Props) {
         media_urls: mediaUrls,
         media_types: mediaTypes,
         thumbnail_url: thumbnailUrl,
+        clip_start: visibility === 'ppv' && clipDuration > 0 ? clipStart : null,
+        clip_duration: visibility === 'ppv' && clipDuration > 0 ? clipDuration : null,
       });
 
       if (postError) throw postError;
@@ -237,10 +239,12 @@ export default function PostComposer({ onPost }: Props) {
     <>
     {showTrimmer && videoFile && videoPreviewUrl && (
       <PPVClipTrimmer
+        videoFile={videoFile}
         videoUrl={videoPreviewUrl}
-        onConfirm={(start, clipLen) => {
+        onConfirm={(start, duration, thumb) => {
           setClipStart(start);
-          setClipDuration(clipLen);
+          setClipDuration(duration);
+          setThumbnailDataUrl(thumb);
           setShowTrimmer(false);
         }}
         onClose={() => setShowTrimmer(false)}
