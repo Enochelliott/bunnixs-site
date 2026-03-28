@@ -27,7 +27,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     if (redirected.current) return;
     if (!user) { redirected.current = true; router.push('/'); return; }
     if (user && !profile) { redirected.current = true; router.push('/onboarding'); return; }
-  }, [loading, user, profile, router]);
+    if (user && !profile) { setTimeout(() => { if (!profile) { redirected.current = true; router.push('/onboarding'); } }, 2000); return; }
 
   useEffect(() => { redirected.current = false; }, [user?.id, profile?.id]);
 

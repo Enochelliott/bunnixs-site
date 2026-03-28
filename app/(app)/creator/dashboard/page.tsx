@@ -20,7 +20,7 @@ export default function CreatorDashboard() {
     if (!user) return;
     const [postsRes, walletRes] = await Promise.all([
       supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
-      supabase.from('creator_wallets').select('*').eq('creator_id', user.id).single(),
+      supabase.from('posts').select('*, profile:profiles!posts_user_id_fkey(id, username, avatar_url)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
     ]);
     setPosts((postsRes.data || []) as Post[]);
     setWallet(walletRes.data);
