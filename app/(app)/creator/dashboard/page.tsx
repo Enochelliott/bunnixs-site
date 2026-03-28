@@ -17,19 +17,29 @@ export default function CreatorDashboard() {
   const { user, profile } = useAuth();
 
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user || !profile) return;
     const [postsRes, walletRes] = await Promise.all([
       supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
-      supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('creator_wallets').select('*').eq('creator_id', user.id).single(),
     ]);
-    const posts = (postsRes.data || []).map((p: any) => ({ ...p, profile: { id: user?.id, username: profile?.username, avatar_url: profile?.avatar_url } }));
-    setPosts(posts as Post[]);
+    // Enrich posts with profile data
+    const enriched = (postsRes.data || []).map((p: any) => ({
+      ...p,
+      profile: {
+        id: profile.id,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
+        is_verified_creator: profile.is_verified_creator,
+      }
+    }));
+    setPosts(enriched as Post[]);
     setWallet(walletRes.data as CreatorWallet | null);
     setLoading(false);
   }, [user, profile]);
 
-
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  return (
     <div className="max-w-2xl mx-auto py-8 px-6">
       {/* Verification Banner */}
       {!profile?.is_verified_creator && (
@@ -75,7 +85,7 @@ export default function CreatorDashboard() {
           ].map(stat => (
             <div key={stat.label} className="bg-hf-card border border-hf-border rounded-2xl p-4 text-center">
               <p className="text-xl mb-1">{stat.icon}</p>
-              <p className={`font-display text-xl font-bold ${stat.color}`}>${stat.value.toFixed(2)}</p>
+              <p className={`font-display text-xl font-bold ${stat.color}`}>${stat.value?.toFixed(2) || '0.00'}</p>
               <p className="text-xs text-hf-muted font-mono mt-1">{stat.label}</p>
             </div>
           ))}
@@ -87,16 +97,13 @@ export default function CreatorDashboard() {
         <div className="bg-hf-card border border-hf-border rounded-2xl p-4 mb-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold">Your subscription</p>
-            <p className="text-xs text-hf-muted mt-0.5">Fans pay ${(profile.subscription_price * 1.30).toFixed(2)}/mo — you receive ${profile.subscription_price.toFixed(2)}/mo</p>
+            <p className="text-xs text-hf-muted mt-0.5">Fans pay ${(profile.subscription_price * 1.30).toFixed(2)}/mo</p>
           </div>
-          <div className="text-right">
-            <p className="font-display text-2xl font-bold text-hf-orange">${profile.subscription_price.toFixed(2)}</p>
-            <p className="text-xs text-hf-muted">per month</p>
-          </div>
+          <p className="font-display text-2xl font-bold text-hf-orange">${profile.subscription_price.toFixed(2)}</p>
         </div>
       )}
 
-      {/* Creator Tools Row */}
+      {/* Creator Tools */}
       <div className="flex gap-3 mb-6 flex-wrap">
         <LaunchSale />
       </div>
@@ -142,7 +149,7 @@ export default function CreatorDashboard() {
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map(i => (
-            <div key={i} className="bg-hf-card border border-hf-border rounded-2xl p-5 space-y-3">
+            <div key={i} className="bg-hf-card border border-hf-border rounded-2xl p-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-hf-border animate-pulse" />
                 <div className="space-y-1.5">
