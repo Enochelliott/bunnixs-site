@@ -237,7 +237,6 @@ export default function PostComposer({ onPost }: Props) {
     <>
     {showTrimmer && videoFile && videoPreviewUrl && (
       <PPVClipTrimmer
-        videoFile={videoFile}
         videoUrl={videoPreviewUrl}
         onConfirm={(start, clipLen) => {
           setClipStart(start);
