@@ -29,7 +29,7 @@ export default function CreatorProfilePage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showReport, setShowReport] = useState<string | null>(null);
 
-  // ─── Fetch creator profile ────────────────────────────────────────────────
+      .select('*')
   const fetchCreator = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
