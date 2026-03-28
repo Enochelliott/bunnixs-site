@@ -28,8 +28,8 @@ export default function CreatorDashboard() {
     setLoading(false);
   }, [user, profile]);
 
-  }, [user, profile]);
-  return (
+
+  useEffect(() => { fetchData(); }, [fetchData]);
     <div className="max-w-2xl mx-auto py-8 px-6">
       {/* Verification Banner */}
       {!profile?.is_verified_creator && (
