@@ -22,12 +22,12 @@ export default function CreatorDashboard() {
       supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
       supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
     ]);
-    const posts = postsRes.data || [];
-    // Enrich with profile data
-    const enriched = posts.map((p: any) => ({ ...p, profile: { id: profile?.id, username: profile?.username, avatar_url: profile?.avatar_url } }));
-    setPosts(enriched as Post[]);
+    const posts = (postsRes.data || []).map((p: any) => ({ ...p, profile: { id: user?.id, username: profile?.username, avatar_url: profile?.avatar_url } }));
+    setPosts(posts as Post[]);
     setWallet(walletRes.data as CreatorWallet | null);
     setLoading(false);
+  }, [user, profile]);
+
   }, [user, profile]);
   return (
     <div className="max-w-2xl mx-auto py-8 px-6">
