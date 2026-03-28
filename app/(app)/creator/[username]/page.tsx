@@ -116,14 +116,14 @@ export default function CreatorProfilePage() {
     }
 
     const enriched = postsData.map(post => ({
+    const enriched = postsData.map(post => ({
       ...post,
+      profile: { id: creator!.id, username: creator!.username, avatar_url: creator!.avatar_url, is_verified_creator: creator!.is_verified_creator },
       likes_count: likesMap[post.id]?.count || 0,
       liked_by_me: likesMap[post.id]?.liked || false,
       is_purchased: purchasedPostIds.includes(post.id),
       is_subscribed: isSubscribed,
     })) as Post[];
-
-    setPosts(enriched);
     setLoadingPosts(false);
   }, [creator, user, isSubscribed]);
 
