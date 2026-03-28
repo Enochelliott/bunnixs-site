@@ -86,8 +86,8 @@ export default function CreatorProfilePage() {
       .eq('user_id', creator.id)
       .order('created_at', { ascending: false })
       .limit(100);
+    console.log('postsData:', postsData?.length, 'creator:', creator?.id);
     if (!postsData) { setLoadingPosts(false); return; }
-
 
     // Get PPV purchases for this fan
     let purchasedPostIds: string[] = [];
