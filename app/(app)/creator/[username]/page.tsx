@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { Profile, Post, calculateFanPrice } from '@/lib/types';
 import PostCard from '@/components/PostCard';
 import PPVPost from '@/components/content/PPVPost';
 import toast from 'react-hot-toast';
@@ -86,7 +87,7 @@ export default function CreatorProfilePage() {
       .eq('user_id', creator.id)
       .order('created_at', { ascending: false })
       .limit(100);
-    console.log('postsData:', postsData?.length, 'creator:', creator?.id);
+
     if (!postsData) { setLoadingPosts(false); return; }
 
     // Get PPV purchases for this fan
@@ -117,11 +118,12 @@ export default function CreatorProfilePage() {
 
     const enriched = postsData.map(post => ({
       ...post,
-      profile: { id: creator!.id, username: creator!.username, avatar_url: creator!.avatar_url, is_verified_creator: creator!.is_verified_creator },
       likes_count: likesMap[post.id]?.count || 0,
       liked_by_me: likesMap[post.id]?.liked || false,
       is_purchased: purchasedPostIds.includes(post.id),
+      is_subscribed: isSubscribed,
     })) as Post[];
+
     setPosts(enriched);
     setLoadingPosts(false);
   }, [creator, user, isSubscribed]);
@@ -256,7 +258,7 @@ export default function CreatorProfilePage() {
             ) : (
               <button
                 onClick={handleSubscribe}
-                className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-pink"
+                className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-red"
               >
                 Subscribe {creator.subscription_price
                   ? `$${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo`
@@ -364,61 +366,61 @@ export default function CreatorProfilePage() {
             {posts.map(post => {
               const canView = canViewPost(post);
 
-              // ── PPV post — use PPVPost component ──
-              if (post.visibility === 'ppv' && !canView) {
-                return <PPVPost key={post.id} post={post} onPurchased={() => fetchPosts()} />;
-              }
-              // ── Subscribers locked UI ──
+              // ── Locked post UI ──
               if (!canView) {
                 return (
-                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden p-5">
-                    <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center">
-                      <div className="text-center">
-                        <p className="text-3xl mb-2">🔒</p>
-                        <p className="font-display font-semibold text-sm">Subscribers Only</p>
-                        <p className="text-xs text-hf-muted mt-1">Subscribe to unlock</p>
-                        <button onClick={handleSubscribe} className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">Subscribe to Unlock</button>
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
+                    <div className="p-5">
+                      {/* Blurred preview */}
+                      <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center mb-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-hf-red/20 to-hf-orange/20 blur-sm" />
+                        <div className="relative z-10 text-center">
+                          {post.visibility === 'subscribers' ? (
+                            <>
+                              <p className="text-3xl mb-2">🔒</p>
+                              <p className="font-display font-semibold text-sm">Subscribers Only</p>
+                              <p className="text-xs text-hf-muted mt-1">
+                                Subscribe for ${calculateFanPrice(creator.subscription_price || 0).toFixed(2)}/mo to unlock
+                              </p>
+                              <button
+                                onClick={handleSubscribe}
+                                className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                              >
+                                Subscribe to Unlock
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-3xl mb-2">💎</p>
+                              <p className="font-display font-semibold text-sm">Pay Per View</p>
+                              <p className="text-xs text-hf-muted mt-1">
+                                Unlock for ${post.ppv_price ? calculateFanPrice(post.ppv_price).toFixed(2) : '?'}
+                              </p>
+                              <button
+                                onClick={() => toast('PPV unlocks coming soon! 🚀', { icon: '💎' })}
+                                className="mt-3 px-4 py-1.5 bg-hf-orange text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                              >
+                                Unlock Post
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 );
               }
+
               // ── Visible post ──
               return (
                 <div key={post.id} className="relative group">
-                  <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
-                </div>
-              );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                  <PostCard
+                    post={post}
+                    onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined}
+                  />
+                  {/* Report button — visible on hover, non-owners only */}
+                  {!isOwnProfile && user && (
+                    <div className="absolute top-4 right-4 z-20">
                       <button
                         onClick={() => setShowReport(showReport === post.id ? null : post.id)}
                         className="opacity-0 group-hover:opacity-100 transition-all text-xs text-hf-muted hover:text-orange-400 bg-hf-dark/80 border border-hf-border px-2 py-1 rounded-lg font-mono"
