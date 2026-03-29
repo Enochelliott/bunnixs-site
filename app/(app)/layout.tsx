@@ -1,6 +1,4 @@
 'use client';
-import NotificationBell from '@/components/NotificationBell';
-import SubscribedDropdown from '@/components/SubscribedDropdown';
 
 import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -8,40 +6,48 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationProvider, useNotifications } from '@/contexts/NotificationContext';
-import MessageBanner from '@/components/MessageBanner';
+import NotificationBell from '@/components/NotificationBell';
+import NotificationBanner from '@/components/notifications/NotificationBanner';
+import SubscribedDropdown from '@/components/SubscribedDropdown';
 import ProfileModal from '@/components/ProfileModal';
+
+const creatorNav = [
+  { href: '/creator/dashboard', label: 'Studio', icon: '⚡' },
+  { href: '/messages', label: 'Messages', icon: '💬' },
+  { href: '/earnings', label: 'Earnings', icon: '💰' },
+  { href: '/profile', label: 'Profile', icon: '🔥' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
+];
+
+const fanNav = [
+  { href: '/feed', label: 'Feed', icon: '🔥' },
+  { href: '/discover', label: 'Discover', icon: '🔍' },
+  { href: '/messages', label: 'Messages', icon: '💬' },
+  { href: '/purchases', label: 'My Purchases', icon: '💎' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
+];
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, signOut } = useAuth();
-  const { unreadCount, clearUnread, profileModal, closeProfileModal } = useNotifications();
+  const { profileModal, closeProfileModal } = useNotifications();
   const router = useRouter();
   const pathname = usePathname();
   const redirected = useRef(false);
 
-  // Clear unread badge when user visits messages
-  useEffect(() => {
-    if (pathname === '/messages') clearUnread();
-  }, [pathname]);
-
   useEffect(() => {
     if (loading) return;
     if (redirected.current) return;
-    // Only redirect to login if truly no user after auth completes
     if (!user) { redirected.current = true; router.push('/'); return; }
-    // Only redirect to onboarding if user has no profile after a generous wait
-    // This prevents false redirects when profile is slow to load
     if (user && !profile) {
       const timer = setTimeout(() => {
-        // Re-check profile - it may have loaded by now
         if (!profile) { redirected.current = true; router.push('/onboarding'); }
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [loading, user, profile, router]);
 
-  useEffect(() => { redirected.current = false; }, [user?.id, profile?.id]);
+  useEffect(() => { redirected.current = false; }, [user?.id]);
 
-  // Show loading screen while auth initializes - never redirect during load
   if (loading) {
     return (
       <div className="min-h-screen bg-hf-dark flex items-center justify-center">
@@ -49,7 +55,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <div className="w-12 h-12 rounded-2xl bg-gradient-hf animate-pulse-glow flex items-center justify-center">
             <span className="text-2xl">🔥</span>
           </div>
-          <div className="w-4 h-4 border-2 border-hf-orange/30 border-t-hf-orange rounded-full animate-spin" />
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-hf-orange animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-hf-orange animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-hf-orange animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
         </div>
       </div>
     );
@@ -58,34 +68,19 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   if (!user || !profile) return null;
 
   const isCreator = profile.role === 'creator';
-
-  const creatorNav = [
-    { href: '/creator/dashboard', icon: '⚡', label: 'Studio', badge: 0 },
-    { href: '/messages', icon: '💬', label: 'Messages', badge: unreadCount },
-    { href: '/creator/earnings', icon: '💰', label: 'Earnings', badge: 0 },
-    { href: '/profile', icon: '🔥', label: 'Profile', badge: 0 },
-    { href: '/settings', icon: '⚙️', label: 'Settings', badge: 0 },
-  ];
-
-  const fanNav = [
-    { href: '/discover', icon: '🔥', label: 'Discover', badge: 0 },
-    { href: '/feed', icon: '⚡', label: 'Feed', badge: 0 },
-    { href: '/messages', icon: '💬', label: 'Messages', badge: unreadCount },
-    { href: '/profile', icon: '🔥', label: 'Profile', badge: 0 },
-    { href: '/settings', icon: '⚙️', label: 'Settings', badge: 0 },
-  ];
-
   const navItems = isCreator ? creatorNav : fanNav;
 
   return (
     <div className="flex min-h-screen bg-hf-dark">
-      <MessageBanner />
+      <NotificationBanner />
 
       {profileModal && (
         <ProfileModal username={profileModal} onClose={closeProfileModal} />
       )}
 
+      {/* Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-hf-card border-r border-hf-border flex flex-col z-40">
+        {/* Logo */}
         <div className="p-4 border-b border-hf-border flex items-center justify-between">
           <Link href={isCreator ? '/creator/dashboard' : '/discover'} className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-xl bg-gradient-hf flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -93,47 +88,37 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             </div>
             <span className="font-display text-xl font-bold text-gradient">HotFans</span>
           </Link>
-          <div className="flex items-center gap-1.5">
-            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
-              isCreator
-                ? 'bg-hf-orange/15 text-hf-orange border border-hf-orange/20'
-                : 'bg-bunni-cyan/10 text-bunni-cyan border border-bunni-cyan/20'
-            }`}>
-              {isCreator ? '👑' : '⭐'}
-            </div>
-            <NotificationBell />
-
-
+          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            isCreator
+              ? 'bg-hf-orange/15 text-hf-orange border border-hf-orange/20'
+              : 'bg-hf-red/10 text-hf-red border border-hf-red/20'
+          }`}>
+            {isCreator ? '👑' : '⭐'}
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        {/* Nav */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(item => {
             const active = pathname === item.href;
             return (
               <Link key={item.href} href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   active
-                    ? 'bg-hf-orange/15 text-hf-orange border border-hf-orange/20'
-                    : 'text-hf-muted hover:text-hf-text hover:bg-bunni-border/50'
+                    ? 'bg-gradient-hf text-white shadow-lg'
+                    : 'text-hf-muted hover:text-hf-text hover:bg-hf-border/50'
                 }`}>
-                <span className="text-xl">{item.icon}</span>
-                <span className="font-body flex-1 flex items-center gap-2">
-                  {item.label}
-                  {item.badge > 0 && (
-                    <span className="bg-hf-orange text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none">
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  )}
-                </span>
-                {active && item.badge === 0 && <div className="w-1.5 h-1.5 rounded-full bg-hf-orange" />}
+                <span className="text-base">{item.icon}</span>
+                {item.label}
+                {item.href === '/messages' && <span className="ml-auto w-2 h-2 rounded-full bg-hf-orange" />}
               </Link>
             );
           })}
         </nav>
 
-
+        {/* User footer */}
         <div className="p-4 border-t border-hf-border">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-bunni-border/30 transition-all cursor-pointer group">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-hf-border/30 transition-all cursor-pointer group">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-hf flex-shrink-0">
               {profile.avatar_url ? (
                 <Image src={profile.avatar_url} alt={profile.username} width={36} height={36} className="w-full h-full object-cover" />
@@ -155,6 +140,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </aside>
+
+      {/* Main content */}
       <main className="flex-1 ml-64 min-h-screen flex flex-col">
         {/* Top header */}
         <div className="sticky top-0 z-30 bg-hf-dark/90 backdrop-blur border-b border-hf-border flex items-center justify-end px-6 py-3 gap-3">
@@ -168,5 +155,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <NotificationProvider>
+      <AppLayoutInner>{children}</AppLayoutInner>
+    </NotificationProvider>
   );
 }
