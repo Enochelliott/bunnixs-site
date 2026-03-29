@@ -350,6 +350,16 @@ export default function CreatorProfilePage() {
             {linkCopied ? '✓' : 'Copy'}
           </button>
         </div>
+      {/* Filter + View Controls */}
+      <div className="px-6 mb-4 flex items-center gap-2 flex-wrap">
+        <button onClick={() => setFilter('all')} className={px-3 py-1.5 rounded-xl text-xs font-mono border transition-all $\{filter === 'all' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}}>All</button>
+        <button onClick={() => setFilter('ppv')} className={px-3 py-1.5 rounded-xl text-xs font-mono border transition-all $\{filter === 'ppv' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}}>💎 Store</button>
+        <button onClick={() => setFilter('subscribers')} className={px-3 py-1.5 rounded-xl text-xs font-mono border transition-all $\{filter === 'subscribers' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}}>⭐ Subscribers Room</button>
+        <div className="ml-auto flex gap-1">
+          <button onClick={() => setViewMode('scroll')} className={w-8 h-8 rounded-lg border flex items-center justify-center transition-all $\{viewMode === 'scroll' ? 'bg-hf-orange border-hf-orange text-white' : 'border-hf-border text-hf-muted'}}>☰</button>
+          <button onClick={() => setViewMode('grid')} className={w-8 h-8 rounded-lg border flex items-center justify-center transition-all $\{viewMode === 'grid' ? 'bg-hf-orange border-hf-orange text-white' : 'border-hf-border text-hf-muted'}}>⊞</button>
+        </div>
+      </div>
       </div>
 
       {/* ── Posts feed ── */}
