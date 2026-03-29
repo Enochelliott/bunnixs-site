@@ -27,6 +27,13 @@ export default function CreatorProfilePage() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [viewMode, setViewMode] = useState<'scroll' | 'grid'>('scroll');
+  const [filter, setFilter] = useState<'all' | 'ppv' | 'subscribers'>('all');
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [wishlistUrls, setWishlistUrls] = useState<string[]>(['']);
+  const [savingWishlist, setSavingWishlist] = useState(false);
+  const [showFullWishlist, setShowFullWishlist] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [showReport, setShowReport] = useState<string | null>(null);
 
@@ -44,6 +51,9 @@ export default function CreatorProfilePage() {
       return;
     }
     setCreator(data as Profile);
+    // Fetch wishlist
+    const { data: wl } = await supabase.from('wishlist_items').select('*').eq('creator_id', data.id).order('created_at', { ascending: false });
+    setWishlistItems(wl || []);
     // Track profile view
     if (user && user.id !== data.id) {
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -202,6 +212,12 @@ export default function CreatorProfilePage() {
   const isOwnProfile = user?.id === creator.id;
   const freePostCount = posts.filter(p => p.visibility === 'free').length;
   const subscriberPostCount = posts.filter(p => p.visibility === 'subscribers').length;
+  const filteredPosts = posts.filter(p => {
+    if (filter === 'ppv') return p.visibility === 'ppv';
+    if (filter === 'subscribers') return p.visibility === 'subscribers';
+    return true;
+  });
+
   const ppvPostCount = posts.filter(p => p.visibility === 'ppv').length;
 
   return (
@@ -341,7 +357,7 @@ export default function CreatorProfilePage() {
         <h2 className="font-display text-lg font-semibold mb-4 text-hf-muted">Posts</h2>
 
         {loadingPosts ? (
-          <div className="space-y-4">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-3 gap-1' : 'space-y-4'}>
             {[1, 2].map(i => (
               <div key={i} className="bg-hf-card border border-hf-border rounded-2xl p-5 space-y-3">
                 <div className="flex items-center gap-3">
@@ -362,49 +378,50 @@ export default function CreatorProfilePage() {
             <p className="text-hf-muted text-sm">Check back soon!</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-3 gap-1' : 'space-y-4'}>
             {posts.map(post => {
               const canView = canViewPost(post);
+              // Grid view - show thumbnail only
+              if (viewMode === 'grid') {
+                const thumb = post.thumbnail_url || post.media_urls?.[0];
+                const isLocked = !canView;
+                return (
+                  <div key={post.id} className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
+                    onClick={() => setViewMode('scroll')}>
+                    {thumb ? (
+                      <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-hf-red/20 to-hf-orange/20">
+                        <span className="text-2xl">{post.visibility === 'ppv' ? '💎' : post.visibility === 'subscribers' ? '⭐' : '🔥'}</span>
+                      </div>
+                    )}
+                    {isLocked && <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><span className="text-xl">{post.visibility === 'ppv' ? '💎' : '🔒'}</span></div>}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-white text-[10px] font-mono truncate">{post.content || (post.visibility === 'ppv' ? `$${post.ppv_price}` : '')}</p>
+                    </div>
+                  </div>
+                );
+              }
 
               // ── Locked post UI ──
-              if (!canView) {
+              if (post.visibility === 'ppv' && !canView) {
                 return (
-                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
-                    <div className="p-5">
-                      {/* Blurred preview */}
-                      <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center mb-4">
-                        <div className="absolute inset-0 bg-gradient-to-br from-hf-red/20 to-hf-orange/20 blur-sm" />
-                        <div className="relative z-10 text-center">
-                          {post.visibility === 'subscribers' ? (
-                            <>
-                              <p className="text-3xl mb-2">🔒</p>
-                              <p className="font-display font-semibold text-sm">Subscribers Only</p>
-                              <p className="text-xs text-hf-muted mt-1">
-                                Subscribe for ${calculateFanPrice(creator.subscription_price || 0).toFixed(2)}/mo to unlock
-                              </p>
-                              <button
-                                onClick={handleSubscribe}
-                                className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
-                              >
-                                Subscribe to Unlock
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <p className="text-3xl mb-2">💎</p>
-                              <p className="font-display font-semibold text-sm">Pay Per View</p>
-                              <p className="text-xs text-hf-muted mt-1">
-                                Unlock for ${post.ppv_price ? calculateFanPrice(post.ppv_price).toFixed(2) : '?'}
-                              </p>
-                              <button
-                                onClick={() => toast('PPV unlocks coming soon! 🚀', { icon: '💎' })}
-                                className="mt-3 px-4 py-1.5 bg-hf-orange text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
-                              >
-                                Unlock Post
-                              </button>
-                            </>
-                          )}
-                        </div>
+                  <article key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
+                    <PPVPost post={post} onPurchased={() => fetchPosts()} />
+                  </article>
+                );
+              }
+              if (post.visibility === 'subscribers' && !canView) {
+                return (
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden p-5">
+                    <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-3xl mb-2">🔒</p>
+                        <p className="font-display font-semibold text-sm">Subscribers Only</p>
+                        <p className="text-xs text-hf-muted mt-1">Subscribe to unlock</p>
+                        <button onClick={handleSubscribe} className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">
+                          Subscribe to Unlock
+                        </button>
                       </div>
                     </div>
                   </div>
