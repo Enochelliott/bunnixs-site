@@ -26,6 +26,41 @@ export default function NotificationBanner() {
   useEffect(() => {
     if (!user) return;
 
+    // Poll every 5 seconds for new message notifications from Stream
+    const checkMessages = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/unread-count', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.count > 0 && data.latestMessage) {
+            const msgBannerId = 'msg-' + data.latestMessage.id;
+            if (!seenIds.current.has(msgBannerId)) {
+              seenIds.current.add(msgBannerId);
+              const msgBanner: Banner = {
+                id: msgBannerId,
+                title: '💬 New message from @' + data.latestMessage.from,
+                body: data.latestMessage.text || 'Sent you a message',
+                type: 'message',
+                target_id: null,
+                target_type: null,
+                created_at: new Date().toISOString(),
+              };
+              setBanners(prev => [...prev, msgBanner]);
+              setTimeout(() => setBanners(prev => prev.filter(b => b.id !== msgBannerId)), 8000);
+            }
+          }
+        }
+      } catch {}
+    };
+
+    checkMessages();
+    const msgInterval = setInterval(checkMessages, 10000);
+
     // Poll every 5 seconds for new unread notifications
     const checkNew = async () => {
       const { data } = await supabase
@@ -73,6 +108,7 @@ export default function NotificationBanner() {
 
     return () => {
       clearInterval(interval);
+      clearInterval(msgInterval);
       supabase.removeChannel(channel);
     };
   }, [user]);

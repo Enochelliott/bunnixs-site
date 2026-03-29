@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 
 import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -29,6 +30,33 @@ const fanNav = [
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, signOut } = useAuth();
+  const [unreadMessages, setUnreadMessages] = React.useState(0);
+
+  // Poll for unread message count every 10 seconds
+  React.useEffect(() => {
+    if (!user) return;
+    const fetchUnread = async () => {
+      try {
+        const { data: { session } } = await (await import('@/lib/supabase')).createSupabaseBrowserClient().auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/unread-count', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUnreadMessages(data.count || 0);
+          // Show banner if new message
+          if (data.count > 0 && data.latestMessage) {
+            // Store latest for banner
+          }
+        }
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
   const { profileModal, closeProfileModal } = useNotifications();
   const router = useRouter();
   const pathname = usePathname();
@@ -110,7 +138,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
                 }`}>
                 <span className="text-base">{item.icon}</span>
                 {item.label}
-                {item.href === '/messages' && <span className="ml-auto w-2 h-2 rounded-full bg-hf-orange" />}
+                {item.href === '/messages' && unreadMessages > 0 && (
+                  <span className="ml-auto min-w-[18px] h-[18px] bg-hf-red text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                    {unreadMessages > 9 ? '9+' : unreadMessages}
+                  </span>
+                )}
               </Link>
             );
           })}
