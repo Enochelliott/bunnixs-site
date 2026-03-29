@@ -76,6 +76,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { redirected.current = false; }, [user?.id]);
 
+  // Force router refresh when user/profile loads to trigger data fetches
+  useEffect(() => {
+    if (user && profile) router.refresh();
+  }, [user?.id, profile?.id]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-hf-dark flex items-center justify-center">

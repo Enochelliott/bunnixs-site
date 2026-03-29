@@ -104,7 +104,7 @@ export default function FeedPage() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  useEffect(() => { if (user) fetchPosts(); }, [fetchPosts, user]);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-6">
