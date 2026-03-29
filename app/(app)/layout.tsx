@@ -102,8 +102,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               {isCreator ? '👑' : '⭐'}
             </div>
             <NotificationBell />
-            <SubscribedDropdown />
-          </div>
+
+
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -155,18 +155,18 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </aside>
-
-      <main className="flex-1 ml-64 min-h-screen">
-        {children}
+      <main className="flex-1 ml-64 min-h-screen flex flex-col">
+        {/* Top header */}
+        <div className="sticky top-0 z-30 bg-hf-dark/90 backdrop-blur border-b border-hf-border flex items-center justify-end px-6 py-3 gap-3">
+          <SubscribedDropdown />
+          <NotificationBell />
+        </div>
+        <div className="flex-1">
+          {children}
+        </div>
       </main>
     </div>
   );
 }
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <NotificationProvider>
-      <AppLayoutInner>{children}</AppLayoutInner>
-    </NotificationProvider>
   );
 }
