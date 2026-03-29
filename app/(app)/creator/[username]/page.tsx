@@ -34,8 +34,8 @@ export default function CreatorProfilePage() {
   const [wishlistUrls, setWishlistUrls] = useState<string[]>(['']);
   const [savingWishlist, setSavingWishlist] = useState(false);
   const [showFullWishlist, setShowFullWishlist] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [showReport, setShowReport] = useState<string | null>(null);
+  const [showFullWishlist, setShowFullWishlist] = useState(false);
+  const [expandedPost, setExpandedPost] = useState<string | null>(null);
 
   // ─── Fetch creator profile ────────────────────────────────────────────────
   const fetchCreator = useCallback(async () => {
