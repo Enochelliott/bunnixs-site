@@ -37,7 +37,7 @@ export default function CreatorDashboard() {
     setLoading(false);
   }, [user, profile]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { if (user && profile) fetchData(); }, [fetchData, user, profile]);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-6">
