@@ -395,7 +395,7 @@ export default function CreatorProfilePage() {
               const canView = canViewPost(post);
               // Grid view - show thumbnail only
               if (viewMode === 'grid') {
-                const thumb = post.thumbnail_url || post.media_urls?.[0];
+                const thumb = (post as any).thumbnail_url || post.media_urls?.[0];
                 const isLocked = !canView;
                 return (
                   <React.Fragment key={post.id}>
@@ -422,7 +422,8 @@ export default function CreatorProfilePage() {
                       <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
                     </div>
                   )}
-                </>;
+                </React.Fragment>
+                );
               }
 
               // ── Locked post UI ──
