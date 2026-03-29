@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,8 +35,9 @@ export default function CreatorProfilePage() {
   const [wishlistUrls, setWishlistUrls] = useState<string[]>(['']);
   const [savingWishlist, setSavingWishlist] = useState(false);
   const [showFullWishlist, setShowFullWishlist] = useState(false);
-  const [showFullWishlist, setShowFullWishlist] = useState(false);
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [showReport, setShowReport] = useState<string | null>(null);
 
   // ─── Fetch creator profile ────────────────────────────────────────────────
   const fetchCreator = useCallback(async () => {
@@ -353,7 +355,7 @@ export default function CreatorProfilePage() {
       </div>
 
       {/* Filter + View Controls */}
-      <div className="px-6 mb-4 flex items-center gap-2 flex-wrap">
+      <div className="px-6 pb-4 flex items-center gap-2 flex-wrap overflow-x-auto">
         <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'all' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>All</button>
         <button onClick={() => setFilter('ppv')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'ppv' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>💎 Store</button>
         <button onClick={() => setFilter('subscribers')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'subscribers' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>⭐ Subscribers Room</button>
@@ -393,11 +395,12 @@ export default function CreatorProfilePage() {
               const canView = canViewPost(post);
               // Grid view - show thumbnail only
               if (viewMode === 'grid') {
-                const thumb = (post as any).thumbnail_url || post.media_urls?.[0];
+                const thumb = post.thumbnail_url || post.media_urls?.[0];
                 const isLocked = !canView;
                 return (
-                  <div key={post.id} className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
-                    onClick={() => setViewMode('scroll')}>
+                  <React.Fragment key={post.id}>
+                  <div className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
+                    onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
                     {thumb ? (
                       <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
@@ -410,7 +413,16 @@ export default function CreatorProfilePage() {
                       <p className="text-white text-[10px] font-mono truncate">{post.content || (post.visibility === 'ppv' ? `$${post.ppv_price}` : '')}</p>
                     </div>
                   </div>
-                );
+                  {/* Expanded view */}
+                  {expandedPost === post.id && (
+                    <div className="col-span-3 bg-hf-card border border-hf-border rounded-2xl overflow-hidden animate-fade-in">
+                      <div className="flex justify-end p-2">
+                        <button onClick={() => setExpandedPost(null)} className="text-hf-muted hover:text-white text-sm px-2">✕ Close</button>
+                      </div>
+                      <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
+                    </div>
+                  )}
+                </>;
               }
 
               // ── Locked post UI ──
