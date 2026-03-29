@@ -383,7 +383,7 @@ export default function CreatorProfilePage() {
               const canView = canViewPost(post);
               // Grid view - show thumbnail only
               if (viewMode === 'grid') {
-                const thumb = post.thumbnail_url || post.media_urls?.[0];
+                const thumb = (post as any).thumbnail_url || post.media_urls?.[0];
                 const isLocked = !canView;
                 return (
                   <div key={post.id} className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
