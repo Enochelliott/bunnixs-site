@@ -220,6 +220,13 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         <div className="flex-1">
           {children}
         </div>
+        <footer className="border-t border-hf-border px-6 py-3 flex items-center justify-center gap-4 flex-wrap">
+          <a href="/legal/terms" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">Terms</a>
+          <a href="/legal/privacy" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">Privacy</a>
+          <a href="/legal/dmca" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">DMCA</a>
+          <a href="/legal/2257" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">2257</a>
+          <span className="text-[10px] text-hf-muted/30 font-mono">© 2026 HotFans LLC</span>
+        </footer>
       </main>
     </div>
   );
