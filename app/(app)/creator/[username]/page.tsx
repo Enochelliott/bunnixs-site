@@ -135,8 +135,8 @@ export default function CreatorProfilePage() {
       likes_count: likesMap[post.id]?.count || 0,
       liked_by_me: likesMap[post.id]?.liked || false,
       is_purchased: purchasedPostIds.includes(post.id),
-      is_subscribed: isSubscribed,
     })) as Post[];
+    setPosts(enriched);
     setLoadingPosts(false);
   }, [creator, user, isSubscribed]);
 
