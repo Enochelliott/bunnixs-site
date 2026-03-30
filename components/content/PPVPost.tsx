@@ -91,7 +91,7 @@ export default function PPVPost({ post, onPurchased }: Props) {
             post.media_types?.[i] === 'image' ? (
               <div key={i} className="relative aspect-[4/3]"><Image src={url} alt="" fill className="object-cover" sizes="600px" /></div>
             ) : (
-              <video key={i} src={url} controls className="w-full" />
+              <video key={i} src={url} controls controlsList="nodownload" disablePictureInPicture className="w-full" />
             )
           ))}
         </div>
