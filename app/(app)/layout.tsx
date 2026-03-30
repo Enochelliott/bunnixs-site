@@ -16,7 +16,7 @@ const creatorNav = [
   { href: '/creator/dashboard', label: 'Studio', icon: '⚡' },
   { href: '/messages', label: 'Messages', icon: '💬' },
   { href: '/earnings', label: 'Earnings', icon: '💰' },
-  { href: profile?.username ? '/creator/' + profile.username : '/profile', label: 'Profile', icon: '🔥' },
+  { href: '/profile', label: 'Profile', icon: '🔥' },
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
@@ -97,7 +97,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   if (!user || !profile) return null;
 
   const isCreator = profile.role === 'creator';
-  const navItems = isCreator ? creatorNav : fanNav;
+  const navItems = (isCreator ? creatorNav : fanNav).map(item => item.href === '/profile' && isCreator && profile?.username ? { ...item, href: '/creator/' + profile.username } : item);
 
   return (
     <div className="flex min-h-screen bg-hf-dark">
