@@ -16,7 +16,7 @@ const creatorNav = [
   { href: '/creator/dashboard', label: 'Studio', icon: '⚡' },
   { href: '/messages', label: 'Messages', icon: '💬' },
   { href: '/earnings', label: 'Earnings', icon: '💰' },
-  { href: '/profile', label: 'Profile', icon: '🔥' },
+  { href: profile?.username ? '/creator/' + profile.username : '/profile', label: 'Profile', icon: '🔥' },
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
