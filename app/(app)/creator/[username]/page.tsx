@@ -261,16 +261,16 @@ export default function CreatorProfilePage() {
             >
               {linkCopied ? '✓ Copied!' : '🔗 Share'}
             </button>
-
+            {/* Message + Tip for non-owners */}
+            {!isOwnProfile && creator && (
+              <>
+                <button onClick={() => router.push('/messages?dm=' + creator.username)} className={lex items-center gap-1.5 px-3 py-2 rounded-xl border border-hf-border text-xs font-mono text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all}>💬 Message</button>
+                <TipButton creatorId={creator.id} creatorUsername={creator.username} />
+              </>
+            )}
             {/* Subscribe / Edit */}
             {isOwnProfile ? (
-              <button
-                onClick={() => router.push('/profile')}
-                className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all"
-              >
-                Edit Profile
-              </button>
-            ) : isSubscribed ? (
+              <button onClick={() => router.push('/profile')} className={px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all}>Edit Profile</button>
               <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">
                 ✓ Subscribed
               </button>
@@ -484,7 +484,27 @@ export default function CreatorProfilePage() {
               }
 
               // ── Locked post UI ──
-              if (!canView) {
+              if (post.visibility === 'ppv' && !canView) {
+                return (
+                  <article key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
+                    <PPVPost post={post} onPurchased={() => fetchPosts()} />
+                  </article>
+                );
+              }
+              if (post.visibility === 'subscribers' && !canView) {
+                return (
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden p-5">
+                    <div className="relative rounded-xl bg-hf-dark h-40 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-3xl mb-2">🔒</p>
+                        <p className="font-display font-semibold text-sm">Subscribers Only</p>
+                        <button onClick={handleSubscribe} className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90">Subscribe to Unlock</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (false) {
                 return (
                   <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
                     <div className="p-5">
