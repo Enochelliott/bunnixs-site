@@ -29,7 +29,7 @@ const fanNav = [
 ];
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, loading, profileChecked, signOut } = useAuth();
   const [unreadMessages, setUnreadMessages] = React.useState(0);
 
   // Poll for unread message count every 10 seconds
@@ -66,17 +66,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     if (loading) return;
     if (redirected.current) return;
     if (!user) { redirected.current = true; router.push('/'); return; }
-    if (user && !profile) {
+    if (user && profileChecked && !profile) { redirected.current = true; router.push('/onboarding'); return; }
+    if (user && !profileChecked) {
       const timer = setTimeout(() => {
         if (!profile) { redirected.current = true; router.push('/onboarding'); }
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [loading, user, profile, router]);
+  }, [loading, user, profile, profileChecked, router]);
 
   useEffect(() => { redirected.current = false; }, [user?.id]);
-
-
 
   if (loading) {
     return (
