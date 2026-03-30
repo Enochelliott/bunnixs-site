@@ -11,6 +11,7 @@ import CommentSection from './CommentSection';
 import EmojiReactions from './EmojiReactions';
 import FanDataPopup from './creator/FanDataPopup';
 import PPVPost from './content/PPVPost';
+import TipButton from './TipButton';
 import OnlineAvatar from './content/OnlineAvatar';
 
 const supabase = createSupabaseBrowserClient();
@@ -149,7 +150,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
               <div key={i} className={`relative bg-hf-dark cursor-pointer overflow-hidden ${post.media_urls.length === 1 ? 'aspect-[4/3]' : post.media_urls.length === 3 && i === 0 ? 'row-span-2 aspect-square' : 'aspect-square'}`} onClick={() => post.media_types?.[i] === 'image' && setLightbox(url)}>
                 {post.media_types?.[i] === 'image'
                   ? <Image src={url} alt="" fill className="object-cover hover:scale-105 transition-transform duration-500" sizes="600px" />
-                  : <video src={url} controls controlsList="nodownload" disablePictureInPicture className="w-full h-full object-cover" onClick={e => e.stopPropagation()} />}
+                  : <video src={url} controls className="w-full h-full object-cover" onClick={e => e.stopPropagation()} />}
               </div>
             ))}
           </div>
@@ -161,6 +162,9 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
               <span className={`text-lg ${liked ? 'animate-scale-in' : ''}`}>{liked ? '♥' : '♡'}</span>
               {likesCount > 0 && <span className="font-mono">{likesCount}</span>}
             </button>
+            {!isOwner && post.profile?.username && (
+              <TipButton creatorId={post.user_id} creatorUsername={post.profile.username} postId={post.id} />
+            )}
           </div>
         )}
 

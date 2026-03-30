@@ -110,13 +110,13 @@ export default function EmojiReactions({ targetId, targetType, postOwnerId }: Pr
             disabled={loading}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm transition-all border ${
               active
-                ? 'bg-bunni-pink/20 border-bunni-pink/50 scale-105'
-                : 'bg-bunni-dark border-bunni-border hover:border-bunni-pink/40 hover:bg-bunni-pink/10'
+                ? 'bg-hf-orange/20 border-hf-orange/50 scale-105'
+                : 'bg-hf-dark border-hf-border hover:border-hf-orange/40 hover:bg-hf-orange/10'
             }`}
           >
             <span>{emoji}</span>
             {count > 0 && (
-              <span className={`text-[11px] font-mono font-bold ${active ? 'text-bunni-pink' : 'text-bunni-muted'}`}>
+              <span className={`text-[11px] font-mono font-bold ${active ? 'text-hf-orange' : 'text-hf-muted'}`}>
                 {count}
               </span>
             )}
