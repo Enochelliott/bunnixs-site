@@ -165,16 +165,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-hf-border">
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-hf-border/30 transition-all cursor-pointer group">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-hf flex-shrink-0">
-              {profile.avatar_url ? (
-                <Image src={profile.avatar_url} alt={profile.username} width={36} height={36} className="w-full h-full object-cover" />
+              {profile?.avatar_url ? (
+                <Image src={profile.avatar_url} alt={profile?.username || ""} width={36} height={36} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
-                  {profile.username[0].toUpperCase()}
+                  {profile?.username?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">@{profile.username}</p>
+              <p className="text-sm font-semibold truncate">@{profile?.username}</p>
               <p className="text-xs text-hf-muted truncate">{user.email}</p>
             </div>
             <button onClick={signOut}
