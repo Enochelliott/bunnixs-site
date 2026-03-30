@@ -65,7 +65,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (redirected.current) return;
-    if (!user) { redirected.current = true; router.push('/'); return; }
+    // AUTH DISABLED FOR REVIEW - re-enable before launch
+    // if (!user) { redirected.current = true; router.push('/'); return; }
     if (user && profileChecked && !profile) { redirected.current = true; router.push('/onboarding'); return; }
     if (user && !profileChecked) {
       const timer = setTimeout(() => {
