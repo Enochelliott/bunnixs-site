@@ -271,15 +271,15 @@ export default function CreatorProfilePage() {
             )}
             {/* Subscribe / Edit */}
             {isOwnProfile ? (
-                ✓ Subscribed
-              </button>
+              <button onClick={() => router.push('/profile')} className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all">Edit Profile</button>
+            ) : isSubscribed ? (
+              <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">✓ Subscribed</button>
             ) : (
-              <button
-                onClick={handleSubscribe}
-                className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-red"
-              >
-                Subscribe {creator.subscription_price
-                  ? `$${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo`
+              <button onClick={handleSubscribe} className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 transition-all">
+                Subscribe {creator.subscription_price ? $${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo : '· Free'}
+              </button>
+            )}
+          </div>
                   : '· Free'}
               </button>
             )}
