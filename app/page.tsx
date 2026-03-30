@@ -119,6 +119,20 @@ export default function LoginPage() {
                 </button>
               </form>
 
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-hf-border" /></div>
+                <div className="relative flex justify-center"><span className="bg-hf-card px-3 text-xs text-hf-muted">or</span></div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.setItem('hf-guest', 'true');
+                  window.location.href = '/feed';
+                }}
+                className="w-full py-3 bg-hf-dark border border-hf-border rounded-xl text-sm text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all font-mono"
+              >
+                👀 Browse as Guest
+              </button>
               <p className="text-center text-xs text-hf-muted mt-6">
                 No password needed. No tracking. Where fans get closer.
               </p>

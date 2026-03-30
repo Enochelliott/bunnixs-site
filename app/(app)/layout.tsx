@@ -11,6 +11,7 @@ import NotificationBell from '@/components/NotificationBell';
 import NotificationBanner from '@/components/notifications/NotificationBanner';
 import SubscribedDropdown from '@/components/SubscribedDropdown';
 import ProfileModal from '@/components/ProfileModal';
+import GuestModeBanner from '@/components/GuestModeToast';
 
 const creatorNav = [
   { href: '/creator/dashboard', label: 'Studio', icon: '⚡' },
@@ -65,8 +66,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (redirected.current) return;
-    // AUTH DISABLED FOR REVIEW - re-enable before launch
-    // if (!user) { redirected.current = true; router.push('/'); return; }
+    // Skip redirect for guest mode
+    const isGuest = typeof window !== 'undefined' && localStorage.getItem('hf-guest') === 'true';
+    if (!user && !isGuest) { redirected.current = true; router.push('/'); return; }
+    if (isGuest) return;
     if (user && profileChecked && !profile) { redirected.current = true; router.push('/onboarding'); return; }
     if (user && !profileChecked) {
       const timer = setTimeout(() => {
@@ -98,11 +101,12 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   if (!user || !profile) return null;
 
   const isCreator = profile.role === 'creator';
-  const navItems = (isCreator ? creatorNav : fanNav).map(item => item.href === '/profile' && isCreator && profile?.username ? { ...item, href: '/creator/' + profile.username } : item);
+  const navItems = isCreator ? creatorNav : fanNav;
 
   return (
     <div className="flex min-h-screen bg-hf-dark">
       <NotificationBanner />
+      <GuestModeBanner />
 
       {profileModal && (
         <ProfileModal username={profileModal} onClose={closeProfileModal} />
