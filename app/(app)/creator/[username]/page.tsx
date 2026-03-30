@@ -11,8 +11,8 @@ import PostCard from '@/components/PostCard';
 import PPVPost from '@/components/content/PPVPost';
 import toast from 'react-hot-toast';
 import SubscribeButton from '@/components/subscriptions/SubscribeButton';
-import BlockButton from '@/components/blocking/BlockButton';
-import FanDataPopup from '@/components/creator/FanDataPopup';
+import SubscribeButton from '@/components/subscriptions/SubscribeButton';
+import TipButton from '@/components/TipButton';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -260,17 +260,17 @@ export default function CreatorProfilePage() {
             >
               {linkCopied ? '✓ Copied!' : '🔗 Share'}
             </button>
-
+            {/* Message + Tip buttons for non-owners */}
+            {!isOwnProfile && (
+              <>
+                <button onClick={() => router.push('/messages?dm=' + creator?.username)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-hf-border text-xs font-mono text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all">
+                  💬 Message
+                </button>
+                {creator && <TipButton creatorId={creator.id} creatorUsername={creator.username} />}
+              </>
+            )}
             {/* Subscribe / Edit */}
             {isOwnProfile ? (
-              <button
-                onClick={() => router.push('/profile')}
-                className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all"
-              >
-                Edit Profile
-              </button>
-            ) : isSubscribed ? (
-              <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">
                 ✓ Subscribed
               </button>
             ) : (
