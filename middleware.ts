@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_PATHS = ['/feed', '/discover', '/creator', '/profile', '/messages'];
-const PUBLIC_PATHS = ['/verify-age', '/blocked', '/auth', '/onboarding', '/api', '/_next', '/favicon', '/verify'];
+const PROTECTED_PATHS = ['/feed', '/discover', '/creator', '/profile', '/messages', '/purchases', '/earnings', '/settings'];
+const PUBLIC_PATHS = ['/verify-age', '/blocked', '/auth', '/onboarding', '/api', '/_next', '/favicon', '/verify', '/legal', '/preview', '/c/'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,19 +25,15 @@ export async function middleware(request: NextRequest) {
 
     if (geoResponse.ok) {
       const geo = await geoResponse.json();
-
       if (geo.blocked) return NextResponse.redirect(new URL('/blocked', request.url));
-
       const ageVerified = request.cookies.get('age_verified')?.value;
       if (ageVerified === 'true') return NextResponse.next();
-
       if (geo.requiresVeriff) {
         const url = new URL('/verify-age', request.url);
         url.searchParams.set('type', 'fan');
         url.searchParams.set('redirect', pathname);
         return NextResponse.redirect(url);
       }
-
       if (geo.requiresConfirm) {
         const url = new URL('/verify-age', request.url);
         url.searchParams.set('type', 'confirm');

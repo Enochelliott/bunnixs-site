@@ -1,149 +1,96 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { createSupabaseBrowserClient } from '@/lib/supabase';
-import toast from 'react-hot-toast';
-
-const supabase = createSupabaseBrowserClient();
-
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles').select('id, role').eq('id', session.user.id).single();
-        if (!profile) { router.push('/onboarding'); }
-        else if (profile.role === 'creator') { router.push('/creator/dashboard'); }
-        else { router.push('/discover'); }
-      } else {
-        setChecking(false);
-      }
-    });
-  }, [router]);
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback`, shouldCreateUser: true },
-    });
-    setLoading(false);
-    if (error) { toast.error(error.message); }
-    else { setSent(true); }
-  };
-
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-hf-dark flex items-center justify-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-hf animate-pulse-glow flex items-center justify-center">
-          <span className="text-2xl">🔥</span>
-        </div>
-      </div>
-    );
-  }
-
+export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-hf-dark flex items-center justify-center relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-hf-red/10 blur-[120px]" />
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-hf-orange/10 blur-[80px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] rounded-full bg-hf-red/8 blur-[80px]" />
-      </div>
-
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `linear-gradient(rgba(204,36,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(204,36,0,1) 1px, transparent 1px)`,
-        backgroundSize: '60px 60px',
-      }} />
-
-      <div className="relative z-10 w-full max-w-md px-6 animate-slide-up">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-hf mb-4 animate-pulse-glow">
-            <span className="text-3xl">🔥</span>
-          </div>
-          <h1 className="font-display text-5xl font-bold text-gradient mb-2">HotFans</h1>
-          <p className="text-hf-muted text-sm font-mono tracking-widest uppercase">
-            Where fans get closer
-          </p>
+    <div className="min-h-screen bg-hf-dark text-hf-text">
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <div className="mb-10">
+          <p className="text-hf-muted text-sm font-mono mb-2">Last updated: March 2026</p>
+          <h1 className="font-display text-4xl font-bold text-gradient mb-4">Terms of Service</h1>
+          <p className="text-hf-muted">Please read these terms carefully before using HotFans.</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-hf-card border border-hf-border rounded-3xl p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-hf opacity-60" />
+        <div className="space-y-8 text-hf-text leading-relaxed">
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">1. Acceptance of Terms</h2>
+            <p>By accessing or using HotFans ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform. HotFans is operated by HotFans LLC, a New Mexico limited liability company.</p>
+          </section>
 
-          {!sent ? (
-            <>
-              <h2 className="font-display text-2xl font-semibold mb-2">Welcome</h2>
-              <p className="text-hf-muted text-sm mb-8">
-                Enter your email and we&apos;ll send you a magic link to sign in or create your account.
-              </p>
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">2. Eligibility</h2>
+            <p className="mb-3">You must be at least 18 years of age to use HotFans. By using the Platform, you represent and warrant that:</p>
+            <ul className="list-disc pl-6 space-y-1 text-hf-muted">
+              <li>You are at least 18 years old</li>
+              <li>You are legally permitted to access adult content in your jurisdiction</li>
+              <li>You are not accessing the Platform from a jurisdiction where such content is prohibited</li>
+              <li>All information you provide is accurate and complete</li>
+            </ul>
+          </section>
 
-              <form onSubmit={handleMagicLink} autoComplete="off" className="space-y-4">
-                <div>
-                  <label className="block text-xs font-mono tracking-widest text-hf-muted uppercase mb-2">
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    autoComplete="email"
-                    className="w-full bg-hf-dark border border-hf-border rounded-xl px-4 py-3 text-hf-text placeholder-hf-muted focus:border-hf-orange focus:shadow-[0_0_0_2px_rgba(255,107,0,0.15)] transition-all"
-                  />
-                </div>
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">3. Creator Content & Obligations</h2>
+            <p className="mb-3">Creators on HotFans are responsible for all content they upload. By posting content, you represent and warrant that:</p>
+            <ul className="list-disc pl-6 space-y-1 text-hf-muted">
+              <li>You own or have the right to distribute all content you post</li>
+              <li>All individuals depicted in your content are at least 18 years of age</li>
+              <li>You have obtained written consent from all individuals depicted</li>
+              <li>You maintain all required records under 18 U.S.C. § 2257</li>
+              <li>Your content does not violate any applicable laws</li>
+            </ul>
+          </section>
 
-                <button
-                  type="submit"
-                  disabled={loading || !email}
-                  className="w-full bg-gradient-hf text-white font-display font-semibold py-3.5 rounded-xl hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending...
-                    </span>
-                  ) : 'Send Magic Link 🔥'}
-                </button>
-              </form>
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">4. Prohibited Content</h2>
+            <p className="mb-3">The following content is strictly prohibited on HotFans:</p>
+            <ul className="list-disc pl-6 space-y-1 text-hf-muted">
+              <li>Any content depicting minors in a sexual manner</li>
+              <li>Non-consensual intimate imagery</li>
+              <li>Content that promotes violence, hate speech, or discrimination</li>
+              <li>Content that violates any third party's intellectual property rights</li>
+              <li>Spam, scams, or fraudulent content</li>
+              <li>Content depicting illegal activities</li>
+            </ul>
+          </section>
 
-              <p className="text-center text-xs text-hf-muted mt-6">
-                No password needed. No tracking. Where fans get closer.
-              </p>
-            </>
-          ) : (
-            <div className="text-center py-4 animate-scale-in">
-              <div className="text-5xl mb-4">📬</div>
-              <h2 className="font-display text-2xl font-semibold mb-2">Check your inbox</h2>
-              <p className="text-hf-muted text-sm mb-6">
-                We sent a magic link to{' '}
-                <span className="text-hf-orange font-medium">{email}</span>.
-                <br />
-                Click it in the <strong>same browser</strong> — link expires in 1 hour.
-              </p>
-              <p className="text-xs text-hf-muted mb-4">
-                New to HotFans? You'll be taken to set up your account after clicking the link.
-              </p>
-              <button
-                onClick={() => { setSent(false); setEmail(''); }}
-                className="text-xs text-hf-muted hover:text-hf-orange transition-colors font-mono"
-              >
-                ← Use a different email
-              </button>
-            </div>
-          )}
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">5. Payments & Fees</h2>
+            <p className="mb-3">HotFans facilitates payments between fans and creators. Our fee structure is as follows:</p>
+            <ul className="list-disc pl-6 space-y-1 text-hf-muted">
+              <li>Platform fee: 8% of all transactions</li>
+              <li>Payment processing fee: 3% (passed through from payment processor)</li>
+              <li>Creators receive 89% of all payments made by fans</li>
+              <li>Minimum payout threshold: $50.00</li>
+              <li>Payouts are processed within 7 business days of request</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">6. Identity Verification</h2>
+            <p>All creators must complete identity verification through our third-party provider (Veriff) before posting content. This verification confirms age and identity. Failure to maintain accurate verification may result in account suspension.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">7. Content Removal & DMCA</h2>
+            <p>HotFans respects intellectual property rights and complies with the Digital Millennium Copyright Act. If you believe your copyrighted work has been infringed, please submit a takedown notice to <span className="text-hf-orange">dmca@hotfans.com</span>. See our full <a href="/legal/dmca" className="text-hf-orange hover:underline">DMCA Policy</a> for details.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">8. Account Termination</h2>
+            <p>HotFans reserves the right to suspend or terminate any account that violates these Terms of Service, at our sole discretion, with or without notice. Upon termination, your right to use the Platform ceases immediately.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">9. Limitation of Liability</h2>
+            <p>To the maximum extent permitted by law, HotFans LLC shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform. Our total liability shall not exceed the amount you paid to us in the 12 months preceding the claim.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">10. Governing Law</h2>
+            <p>These Terms are governed by the laws of the State of New Mexico, United States, without regard to conflict of law principles. Any disputes shall be resolved in the courts of New Mexico.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold text-hf-orange mb-3">11. Contact</h2>
+            <p>For questions about these Terms, contact us at: <span className="text-hf-orange">legal@hotfans.com</span></p>
+          </section>
         </div>
       </div>
     </div>
