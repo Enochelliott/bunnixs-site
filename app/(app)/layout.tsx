@@ -185,14 +185,14 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
+        {/* Legal links in sidebar */}
+        <div className="px-4 pb-2 flex items-center justify-center gap-3 flex-wrap">
+          <a href="/legal/terms" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">Terms</a>
+          <a href="/legal/privacy" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">Privacy</a>
+          <a href="/legal/dmca" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">DMCA</a>
+          <a href="/legal/2257" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">2257</a>
+        </div>
         {/* User footer */}
-        <div className="p-4 border-t border-hf-border">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-hf-border/30 transition-all cursor-pointer group">
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-hf flex-shrink-0">
-              {profile.avatar_url ? (
-                <Image src={profile.avatar_url} alt={profile.username} width={36} height={36} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
                   {profile.username[0].toUpperCase()}
                 </div>
               )}
