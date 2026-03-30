@@ -101,8 +101,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('hf-guest') === 'true';
   if (!user && !isGuest) return null;
   if (!profile && !isGuest) return null;
+  const isCreator = profile?.role === 'creator';
   const navItems = isCreator ? creatorNav : fanNav;
-
   return (
     <div className="flex min-h-screen bg-hf-dark">
       <NotificationBanner />
