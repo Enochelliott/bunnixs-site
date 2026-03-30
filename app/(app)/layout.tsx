@@ -98,7 +98,38 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user || !profile) return null;
+  const isGuest = typeof window !== 'undefined' && localStorage.getItem('hf-guest') === 'true';
+  if (!user && !isGuest) return null;
+  if (!user && isGuest) {
+    return (
+      <div className="flex min-h-screen bg-hf-dark">
+        <GuestModeBanner />
+        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-hf-card border-r border-hf-border flex flex-col z-40">
+          <div className="p-4 border-b border-hf-border flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-hf flex items-center justify-center"><span className="text-base">🔥</span></div>
+            <span className="font-display text-xl font-bold text-gradient">HotFans</span>
+          </div>
+          <nav className="flex-1 p-4 space-y-1">
+            {fanNav.map(item => (
+              <a key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-hf-muted hover:text-hf-text hover:bg-hf-border/50 transition-all">
+                <span className="text-base">{item.icon}</span>{item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="p-4 border-t border-hf-border">
+            <button onClick={() => { localStorage.removeItem('hf-guest'); window.location.href = '/'; }} className="w-full py-2 bg-gradient-hf text-white text-sm font-bold rounded-xl hover:opacity-90">🔥 Create Account</button>
+          </div>
+        </aside>
+        <main className="flex-1 ml-64 min-h-screen flex flex-col">
+          <div className="sticky top-0 z-30 bg-hf-dark/90 backdrop-blur border-b border-hf-border flex items-center justify-end px-6 py-3">
+            <button onClick={() => { localStorage.removeItem('hf-guest'); window.location.href = '/'; }} className="px-4 py-2 bg-gradient-hf text-white text-sm font-bold rounded-xl hover:opacity-90">Join Free 🔥</button>
+          </div>
+          <div className="flex-1 mt-8">{children}</div>
+        </main>
+      </div>
+    );
+  }
+  if (!profile) return null;
 
   const isCreator = profile.role === 'creator';
   const navItems = isCreator ? creatorNav : fanNav;
