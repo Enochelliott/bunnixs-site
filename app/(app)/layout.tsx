@@ -199,7 +199,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">@{profile.username}</p>
-              <p className="text-xs text-hf-muted truncate">{user.email}</p>
+              <p className="text-xs text-hf-muted truncate">{user?.email}</p>
             </div>
             <button onClick={signOut}
               className="opacity-0 group-hover:opacity-100 text-hf-muted hover:text-red-400 transition-all text-xs"
