@@ -98,38 +98,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const isGuest = typeof window !== 'undefined' && localStorage.getItem('hf-guest') === 'true';
-  if (!user && !isGuest) return null;
-  if (!user && isGuest) {
-    return (
-      <div className="flex min-h-screen bg-hf-dark">
-        <GuestModeBanner />
-        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-hf-card border-r border-hf-border flex flex-col z-40">
-          <div className="p-4 border-b border-hf-border flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-hf flex items-center justify-center"><span className="text-base">🔥</span></div>
-            <span className="font-display text-xl font-bold text-gradient">HotFans</span>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            {fanNav.map(item => (
-              <a key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-hf-muted hover:text-hf-text hover:bg-hf-border/50 transition-all">
-                <span className="text-base">{item.icon}</span>{item.label}
-              </a>
-            ))}
-          </nav>
-          <div className="p-4 border-t border-hf-border">
-            <button onClick={() => { localStorage.removeItem('hf-guest'); window.location.href = '/'; }} className="w-full py-2 bg-gradient-hf text-white text-sm font-bold rounded-xl hover:opacity-90">🔥 Create Account</button>
-          </div>
-        </aside>
-        <main className="flex-1 ml-64 min-h-screen flex flex-col">
-          <div className="sticky top-0 z-30 bg-hf-dark/90 backdrop-blur border-b border-hf-border flex items-center justify-end px-6 py-3">
-            <button onClick={() => { localStorage.removeItem('hf-guest'); window.location.href = '/'; }} className="px-4 py-2 bg-gradient-hf text-white text-sm font-bold rounded-xl hover:opacity-90">Join Free 🔥</button>
-          </div>
-          <div className="flex-1 mt-8">{children}</div>
-        </main>
-      </div>
-    );
-  }
-  if (!profile) return null;
+  if (!user || !profile) return null;
 
   const isCreator = profile.role === 'creator';
   const navItems = isCreator ? creatorNav : fanNav;
@@ -185,7 +154,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Legal links in sidebar */}
+        {/* Legal links */}
         <div className="px-4 pb-2 flex items-center justify-center gap-3 flex-wrap">
           <a href="/legal/terms" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">Terms</a>
           <a href="/legal/privacy" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">Privacy</a>
@@ -193,13 +162,20 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <a href="/legal/2257" className="text-[9px] text-hf-muted/50 hover:text-hf-orange transition-colors font-mono">2257</a>
         </div>
         {/* User footer */}
+        <div className="p-4 border-t border-hf-border">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-hf-border/30 transition-all cursor-pointer group">
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-hf flex-shrink-0">
+              {profile.avatar_url ? (
+                <Image src={profile.avatar_url} alt={profile.username} width={36} height={36} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
                   {profile.username[0].toUpperCase()}
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">@{profile.username}</p>
-              <p className="text-xs text-hf-muted truncate">{user?.email}</p>
+              <p className="text-xs text-hf-muted truncate">{user.email}</p>
             </div>
             <button onClick={signOut}
               className="opacity-0 group-hover:opacity-100 text-hf-muted hover:text-red-400 transition-all text-xs"
@@ -220,13 +196,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         <div className="flex-1">
           {children}
         </div>
-        <footer className="border-t border-hf-border px-6 py-3 flex items-center justify-center gap-4 flex-wrap">
-          <a href="/legal/terms" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">Terms</a>
-          <a href="/legal/privacy" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">Privacy</a>
-          <a href="/legal/dmca" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">DMCA</a>
-          <a href="/legal/2257" className="text-[10px] text-hf-muted hover:text-hf-orange transition-colors font-mono">2257</a>
-          <span className="text-[10px] text-hf-muted/30 font-mono">© 2026 HotFans LLC</span>
-        </footer>
       </main>
     </div>
   );
