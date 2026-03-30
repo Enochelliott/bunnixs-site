@@ -9,10 +9,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Profile, Post, calculateFanPrice } from '@/lib/types';
 import PostCard from '@/components/PostCard';
 import PPVPost from '@/components/content/PPVPost';
+import TipButton from '@/components/TipButton';
+import PostComposer from '@/components/content/PostComposer';
 import toast from 'react-hot-toast';
 import SubscribeButton from '@/components/subscriptions/SubscribeButton';
-import SubscribeButton from '@/components/subscriptions/SubscribeButton';
-import TipButton from '@/components/TipButton';
+import BlockButton from '@/components/blocking/BlockButton';
+import FanDataPopup from '@/components/creator/FanDataPopup';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -53,7 +55,6 @@ export default function CreatorProfilePage() {
       return;
     }
     setCreator(data as Profile);
-    // Fetch wishlist
     const { data: wl } = await supabase.from('wishlist_items').select('*').eq('creator_id', data.id).order('created_at', { ascending: false });
     setWishlistItems(wl || []);
     // Track profile view
@@ -260,26 +261,26 @@ export default function CreatorProfilePage() {
             >
               {linkCopied ? '✓ Copied!' : '🔗 Share'}
             </button>
-            {/* Message + Tip buttons for non-owners */}
-            {!isOwnProfile && (
-              <>
-                <button onClick={() => router.push('/messages?dm=' + creator?.username)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-hf-border text-xs font-mono text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all">
-                  💬 Message
-                </button>
-                {creator && <TipButton creatorId={creator.id} creatorUsername={creator.username} />}
-              </>
-            )}
+
             {/* Subscribe / Edit */}
             {isOwnProfile ? (
-              <button onClick={() => router.push('/profile')} className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all">Edit Profile</button>
-            ) : isSubscribed ? (
-              <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">✓ Subscribed</button>
-            ) : (
-              <button onClick={handleSubscribe} className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 transition-all">
-                Subscribe {creator.subscription_price ? $${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo : '· Free'}
+              <button
+                onClick={() => router.push('/profile')}
+                className="px-4 py-2 rounded-xl border border-hf-border text-xs font-semibold text-hf-muted hover:border-hf-orange hover:text-hf-orange transition-all"
+              >
+                Edit Profile
               </button>
-            )}
-          </div>
+            ) : isSubscribed ? (
+              <button className="px-4 py-2 rounded-xl bg-green-400/15 border border-green-400/40 text-green-400 text-xs font-semibold">
+                ✓ Subscribed
+              </button>
+            ) : (
+              <button
+                onClick={handleSubscribe}
+                className="px-5 py-2 rounded-xl bg-gradient-hf text-white text-xs font-bold hover:opacity-90 hover:scale-[1.02] transition-all glow-red"
+              >
+                Subscribe {creator.subscription_price
+                  ? `$${calculateFanPrice(creator.subscription_price).toFixed(2)}/mo`
                   : '· Free'}
               </button>
             )}
@@ -354,16 +355,84 @@ export default function CreatorProfilePage() {
         </div>
       </div>
 
+      {/* PostComposer - only for own profile */}
+      {isOwnProfile && (
+        <div className="px-6 mb-4">
+          <PostComposer onPost={fetchPosts} />
+        </div>
+      )}
+
+      {/* Wishlist section */}
+      {wishlistItems.length > 0 && (
+        <div className="px-6 mb-4">
+          <div className="bg-hf-card border border-hf-border rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-display text-sm font-bold">🎁 {creator?.username}'s Wishlist</h3>
+              {wishlistItems.length > 3 && (
+                <button onClick={() => setShowFullWishlist(!showFullWishlist)} className="text-xs text-hf-orange hover:underline">
+                  {showFullWishlist ? 'Show less' : `View all ${wishlistItems.length}`}
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(showFullWishlist ? wishlistItems : wishlistItems.slice(0, 3)).map((item: any) => (
+                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-hf-dark border border-hf-border rounded-xl text-xs hover:border-hf-orange transition-all">
+                  🔗 <span className="truncate max-w-[140px]">{item.title || new URL(item.url).hostname}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Creator wishlist manager */}
+      {isOwnProfile && (
+        <div className="px-6 mb-4">
+          <button onClick={() => setShowWishlist(!showWishlist)} className="text-xs text-hf-orange hover:underline font-mono">
+            🎁 {showWishlist ? 'Hide' : 'Manage'} Wishlist
+          </button>
+          {showWishlist && (
+            <div className="mt-2 bg-hf-card border border-hf-orange/30 rounded-2xl p-4 space-y-3">
+              <p className="text-sm font-semibold">Paste URLs to items you desire</p>
+              {wishlistUrls.map((url, i) => (
+                <div key={i} className="flex gap-2">
+                  <input value={url} onChange={e => { const a = [...wishlistUrls]; a[i] = e.target.value; setWishlistUrls(a); }}
+                    placeholder="https://amazon.com/..." className="flex-1 bg-hf-dark border border-hf-border rounded-xl px-3 py-2 text-sm text-hf-text focus:border-hf-orange transition-colors" />
+                  {wishlistUrls.length > 1 && <button onClick={() => setWishlistUrls(prev => prev.filter((_, j) => j !== i))} className="text-red-400 px-2">✕</button>}
+                </div>
+              ))}
+              <button onClick={() => setWishlistUrls(prev => [...prev, ''])} className="w-full py-2 border border-dashed border-hf-border rounded-xl text-xs text-hf-muted hover:border-hf-orange transition-all">+ Add another URL</button>
+              <button disabled={savingWishlist} onClick={async () => {
+                setSavingWishlist(true);
+                const valid = wishlistUrls.filter(u => u.trim().startsWith('http'));
+                if (!valid.length) { toast.error('Add at least one valid URL'); setSavingWishlist(false); return; }
+                await supabase.from('wishlist_items').delete().eq('creator_id', creator!.id);
+                await supabase.from('wishlist_items').insert(valid.map(url => ({ creator_id: creator!.id, url })));
+                const { data: wl } = await supabase.from('wishlist_items').select('*').eq('creator_id', creator!.id);
+                setWishlistItems(wl || []);
+                toast.success('Wishlist saved! 🎁');
+                setShowWishlist(false);
+                setSavingWishlist(false);
+              }} className="w-full py-2.5 bg-gradient-hf text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-40 text-sm">
+                {savingWishlist ? 'Saving...' : '🎁 Save Wishlist'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Filter + View Controls */}
       <div className="px-6 pb-4 flex items-center gap-2 flex-wrap overflow-x-auto">
-        <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${filter === 'all' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>All</button>
-        <button onClick={() => setFilter('ppv')} className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${filter === 'ppv' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>💎 {creator?.username}'s Store</button>
-        <button onClick={() => setFilter('subscribers')} className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${filter === 'subscribers' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>⭐ {creator?.username}'s Subscribers Room</button>
+        <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'all' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>All</button>
+        <button onClick={() => setFilter('ppv')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'ppv' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>💎 {creator?.username}'s Store</button>
+        <button onClick={() => setFilter('subscribers')} className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all ${filter === 'subscribers' ? 'bg-gradient-hf text-white border-transparent' : 'border-hf-border text-hf-muted hover:border-hf-orange'}`}>⭐ Subscribers Room</button>
         <div className="ml-auto flex gap-1">
           <button onClick={() => setViewMode('scroll')} className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${viewMode === 'scroll' ? 'bg-hf-orange border-hf-orange text-white' : 'border-hf-border text-hf-muted'}`}>☰</button>
           <button onClick={() => setViewMode('grid')} className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-hf-orange border-hf-orange text-white' : 'border-hf-border text-hf-muted'}`}>⊞</button>
         </div>
       </div>
+
       {/* ── Posts feed ── */}
       <div className="px-6">
         <h2 className="font-display text-lg font-semibold mb-4 text-hf-muted">Posts</h2>
@@ -391,60 +460,68 @@ export default function CreatorProfilePage() {
           </div>
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-3 gap-1' : 'space-y-4'}>
-            {filteredPosts.map(post => {
+            {posts.map(post => {
               const canView = canViewPost(post);
-              // Grid view - show thumbnail only
               if (viewMode === 'grid') {
                 const thumb = (post as any).thumbnail_url || post.media_urls?.[0];
                 const isLocked = !canView;
                 return (
                   <React.Fragment key={post.id}>
-                  <div className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
-                    onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
-                    {thumb ? (
-                      <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-hf-red/20 to-hf-orange/20">
-                        <span className="text-2xl">{post.visibility === 'ppv' ? '💎' : post.visibility === 'subscribers' ? '⭐' : '🔥'}</span>
+                    <div className="relative aspect-square bg-hf-dark overflow-hidden cursor-pointer group"
+                      onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}>
+                      {thumb ? <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-hf-red/20 to-hf-orange/20"><span className="text-2xl">{post.visibility === 'ppv' ? '💎' : '🔥'}</span></div>}
+                      {isLocked && <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><span className="text-xl">{post.visibility === 'ppv' ? '💎' : '🔒'}</span></div>}
+                    </div>
+                    {expandedPost === post.id && (
+                      <div className="col-span-3 bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
+                        <div className="flex justify-end p-2"><button onClick={() => setExpandedPost(null)} className="text-hf-muted hover:text-white text-sm px-2">✕ Close</button></div>
+                        <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
                       </div>
                     )}
-                    {isLocked && <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><span className="text-xl">{post.visibility === 'ppv' ? '💎' : '🔒'}</span></div>}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-[10px] font-mono truncate">{post.content || (post.visibility === 'ppv' ? `$${post.ppv_price}` : '')}</p>
-                    </div>
-                  </div>
-                  {/* Expanded view */}
-                  {expandedPost === post.id && (
-                    <div className="col-span-3 bg-hf-card border border-hf-border rounded-2xl overflow-hidden animate-fade-in">
-                      <div className="flex justify-end p-2">
-                        <button onClick={() => setExpandedPost(null)} className="text-hf-muted hover:text-white text-sm px-2">✕ Close</button>
-                      </div>
-                      <PostCard post={post} onDelete={isOwnProfile ? () => setPosts(prev => prev.filter(p => p.id !== post.id)) : undefined} />
-                    </div>
-                  )}
-                </React.Fragment>
+                  </React.Fragment>
                 );
               }
 
               // ── Locked post UI ──
-              if (post.visibility === 'ppv' && !canView) {
+              if (!canView) {
                 return (
-                  <article key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
-                    <PPVPost post={post} onPurchased={() => fetchPosts()} />
-                  </article>
-                );
-              }
-              if (post.visibility === 'subscribers' && !canView) {
-                return (
-                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden p-5">
-                    <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center">
-                      <div className="text-center">
-                        <p className="text-3xl mb-2">🔒</p>
-                        <p className="font-display font-semibold text-sm">Subscribers Only</p>
-                        <p className="text-xs text-hf-muted mt-1">Subscribe to unlock</p>
-                        <button onClick={handleSubscribe} className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">
-                          Subscribe to Unlock
-                        </button>
+                  <div key={post.id} className="bg-hf-card border border-hf-border rounded-2xl overflow-hidden">
+                    <div className="p-5">
+                      {/* Blurred preview */}
+                      <div className="relative rounded-xl overflow-hidden bg-hf-dark h-40 flex items-center justify-center mb-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-hf-red/20 to-hf-orange/20 blur-sm" />
+                        <div className="relative z-10 text-center">
+                          {post.visibility === 'subscribers' ? (
+                            <>
+                              <p className="text-3xl mb-2">🔒</p>
+                              <p className="font-display font-semibold text-sm">Subscribers Only</p>
+                              <p className="text-xs text-hf-muted mt-1">
+                                Subscribe for ${calculateFanPrice(creator.subscription_price || 0).toFixed(2)}/mo to unlock
+                              </p>
+                              <button
+                                onClick={handleSubscribe}
+                                className="mt-3 px-4 py-1.5 bg-gradient-hf text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                              >
+                                Subscribe to Unlock
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-3xl mb-2">💎</p>
+                              <p className="font-display font-semibold text-sm">Pay Per View</p>
+                              <p className="text-xs text-hf-muted mt-1">
+                                Unlock for ${post.ppv_price ? calculateFanPrice(post.ppv_price).toFixed(2) : '?'}
+                              </p>
+                              <button
+                                onClick={() => toast('PPV unlocks coming soon! 🚀', { icon: '💎' })}
+                                className="mt-3 px-4 py-1.5 bg-hf-orange text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                              >
+                                Unlock Post
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
